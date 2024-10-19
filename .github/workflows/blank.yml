@@ -1,0 +1,27 @@
+
+name: Publish 
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ./orders-microservice.sln
+
+      - name: Build
+        run: dotnet build ./orders-microservice.sln --configuration Release --no-restore
+
+      - name: Publish 
+        run: dotnet publish ./orders-microservice.sln --configuration Release --no-build
