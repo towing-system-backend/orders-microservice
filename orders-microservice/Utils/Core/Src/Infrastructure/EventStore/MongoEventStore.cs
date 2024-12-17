@@ -22,13 +22,14 @@ namespace Application.Core
         public async Task AppendEvents(List<DomainEvent> events)
         {
 
-            var mappedEvents = events.Select(e => new MongoEvent
-            {
-                Stream = e.PublisherId,
-                Type = e.Type,
-                Data = e.Context.ToBsonDocument(),
-                OcurredDate = e.OcurredDate
-            });
+            var mappedEvents = events.Select(e => 
+                new MongoEvent(
+                    e.PublisherId,                  
+                    e.Type,                        
+                    e.Context.ToBsonDocument().ToString(), 
+                    e.OcurredDate                
+                )
+            );
 
             await _eventCollection.InsertManyAsync(mappedEvents);
         }

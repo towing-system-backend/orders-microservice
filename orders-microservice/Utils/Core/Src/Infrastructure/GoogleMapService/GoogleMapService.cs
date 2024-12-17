@@ -1,26 +1,25 @@
-﻿using GoogleMapsApi;
-using GoogleMapsApi.Entities.Geocoding.Request;
-using orders_microservice.Utils.Core.Src.Application.MapService;
+﻿using orders_microservice.Utils.Core.Src.Application.MapService;
 using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService.types;
+using RestSharp;
 
 namespace orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
 
-public class GoogleMapService : ILocationService<CoordinatesResponse>
+public class GoogleMapService : ILocationService<string>
 {
     private readonly string? _apiKey = Environment.GetEnvironmentVariable("MAPS_API_KEY");
     
-    public async Task<CoordinatesResponse> FindCoordinates(string location)
+    public async Task<string> FindCoordinates(string location)
     {
-        var geocodeRequest = new GeocodingRequest { Address = location, ApiKey = _apiKey };
-        var geocodingEngine = GoogleMaps.Geocode;
-        var geocodeResponse = await geocodingEngine.QueryAsync(geocodeRequest);
-        var firstResult = geocodeResponse.Results.First();
-        var coordinates = new CoordinatesResponse
-        {
-            Latitude = firstResult.Geometry.Location.Latitude,
-            Longitude = firstResult.Geometry.Location.Longitude
-        };
-        return coordinates;
+        var client = new RestClient("https://maps.googleapis.com");
+        var request = new RestRequest("maps/api/geocode/json", Method.Get);
+
+        request.AddParameter("address", location);
+        request.AddParameter("Key", _apiKey);
+        
+        var response = await client.ExecuteAsync(request);
+        if (!response.IsSuccessful) 
+            throw new HttpRequestException("Error trying to resolve the request from google maps.");
+        return response.Content;
     }
 
 }
