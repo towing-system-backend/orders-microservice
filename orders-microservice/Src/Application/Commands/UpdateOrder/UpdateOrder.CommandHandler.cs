@@ -4,11 +4,13 @@ using orders_microservice.Application.Errors;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Domain.ValueObjects;
 
+namespace orders_microservice.Application.Commands.UpdateOrder;
+
 public class UpdateOrderCommandHandler(
     IEventStore eventStore,
     IOrderRepository orderRepository,
     IMessageBrokerService messageBrokerService
-    ) 
+) 
     : IService<UpdateOrderCommand, UpdateOrderResponse>
 { 
     private readonly IEventStore _eventStore = eventStore;
@@ -19,9 +21,9 @@ public class UpdateOrderCommandHandler(
         var OrderRegistered = await _orderRepository.FindById(command.Id);
         if (!OrderRegistered.HasValue()) return Result<UpdateOrderResponse>.MakeError(new OrderNotFoundError());
         var Order = OrderRegistered.Unwrap();
-        if (command.status != null) Order.UpdateOrderStatus(new OrderStatus(command.status));
-        if (command.towDriverAssigned != null) Order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(command.towDriverAssigned));
-        if (command.destination != null) Order.UpdateOrderDestinationLocation(new OrderDestinationLocation(command.destination));
+        if (command.Status != null) Order.UpdateOrderStatus(new OrderStatus(command.Status));
+        if (command.TowDriverAssigned != null) Order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(command.TowDriverAssigned));
+        if (command.Destination != null) Order.UpdateOrderDestinationLocation(new OrderDestinationLocation(command.Destination));
         var events = Order.PullEvents();
         await _orderRepository.Save(Order);
         await _eventStore.AppendEvents(events);

@@ -4,11 +4,13 @@ using orders_microservice.Application.Errors;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Domain.ValueObjects;
 
+namespace orders_microservice.Application.Commands.UpdateOrderStatus;
+
 public class UpdateOrderStatusCommandHandler(
     IEventStore eventStore, 
     IOrderRepository orderRepository,
     IMessageBrokerService messageBrokerService
-    ) 
+) 
     : IService<UpdateOrderStatusCommand, UpdateOrderStatusResponse>
 { 
     private readonly IEventStore _eventStore = eventStore;
@@ -19,7 +21,7 @@ public class UpdateOrderStatusCommandHandler(
         var OrderRegistered = await _orderRepository.FindById(command.Id);
         if (!OrderRegistered.HasValue()) return Result<UpdateOrderStatusResponse>.MakeError(new OrderNotFoundError());
         var Order = OrderRegistered.Unwrap();
-        if (command.status != null) Order.UpdateOrderStatus(new OrderStatus(command.status));
+        if (command.Status != null) Order.UpdateOrderStatus(new OrderStatus(command.Status));
         var events = Order.PullEvents();
         await _orderRepository.Save(Order);
         await _eventStore.AppendEvents(events);

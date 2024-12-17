@@ -2,9 +2,9 @@
 
 public record UpdateOrderCommand(
     string Id,
-    string? status,
-    string? towDriverAssigned,
-    string? destination
+    string? Status,
+    string? TowDriverAssigned,
+    string? Destination
 );
 
     

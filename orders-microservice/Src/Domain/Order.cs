@@ -33,13 +33,13 @@ public class Order : AggregateRoot<OrderId>
 		}
 	}
 	
-	public OrderId GetOrderId => this.Id;
-	public OrderStatus GetOrderStatus => this.Status;
-	public OrderIssueLocation GetOrderIssueLocation => this.IssueLocation;
-	public OrderDestinationLocation GetOrderDestinationLocation => this.DestinationLocation;
-	public OrderTowDriverAssigned GetOrderTowDriverAssigned => this.TowDriverAssigned;
-	public OrderDetails GetOrderDetails => this.Details;
-	public OrderClientInformation GetOrderClientInformation => this.ClientInformation;
+	public OrderId GetOrderId => Id;
+	public OrderStatus GetOrderStatus => Status;
+	public OrderIssueLocation GetOrderIssueLocation => IssueLocation;
+	public OrderDestinationLocation GetOrderDestinationLocation => DestinationLocation;
+	public OrderTowDriverAssigned GetOrderTowDriverAssigned => TowDriverAssigned;
+	public OrderDetails GetOrderDetails => Details;
+	public OrderClientInformation GetOrderClientInformation => ClientInformation;
 
 	public static Order Create(
 		OrderId id, 

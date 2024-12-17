@@ -5,8 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Repositories;
 using System.Text;
-using orders_microservice.Utils.Core.Src.Application.MapService;
-using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
@@ -19,7 +19,6 @@ builder.Services.AddScoped<IMessageBrokerService, RabbitMQService>();
 builder.Services.AddControllers(options => {
     options.Filters.Add<GlobalExceptionFilter>();
 }); 
-builder.Services.AddHttpClient<GoogleMapService>();
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>

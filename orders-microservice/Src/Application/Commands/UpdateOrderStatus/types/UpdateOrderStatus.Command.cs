@@ -2,7 +2,7 @@
 
 public record UpdateOrderStatusCommand(
     string Id,
-    string status
+    string Status
 );
 
     
