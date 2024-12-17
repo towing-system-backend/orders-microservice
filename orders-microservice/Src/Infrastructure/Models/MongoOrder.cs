@@ -1,0 +1,28 @@
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace orders_microservice.Infrastructure.Controllers;
+
+public class MongoOrder(
+    string id,
+    string status,
+    string issueLocation,
+    string destination,
+    string towDriverAssigned,
+    string details,
+    string name,
+    string image,
+    string policy,
+    string phoneNumber)
+{
+    [BsonId] 
+    public string OrderId = id;
+    public string Status = status;
+    public string IssueLocation = issueLocation;
+    public string Destination = destination;
+    public string TowDriverAssigned = towDriverAssigned;
+    public string Details = details;
+    public string Name = name;
+    public string Image = image;
+    public string PolicyId = policy;
+    public string PhoneNumber = phoneNumber;
+}
