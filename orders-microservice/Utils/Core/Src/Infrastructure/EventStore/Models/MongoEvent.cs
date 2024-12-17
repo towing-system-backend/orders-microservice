@@ -1,14 +1,11 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-
-namespace Application.Core
+﻿namespace Application.Core
 {
-    public class MongoEvent
+    public class MongoEvent(string stream, string type, string data, DateTime ocurredDate)
     {
-        [BsonId]
-        public string Stream { get; set; } = null!;
-        public string Type { get; set; } = null!;
-        public Object Data { get; set; } = null!;
-        public string OcurredDate { get; set; } = null!;
+        public string Stream = stream;
+        public string Type = type;
+        public string Data = data;
+        public DateTime OcurredDate = ocurredDate;
     }
 }
 

@@ -5,6 +5,6 @@ namespace Application.Core
         public readonly string PublisherId = publisherId;
         public readonly string Type = type;
         public readonly Object Context = context;
-        public readonly string OcurredDate = DateTime.Now.ToString();
+        public readonly DateTime OcurredDate = DateTime.Now;
     }
 }
