@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using order.Infrastructure.Responses;
 using orders_microservice.Application.Commands.RegisterOrder;
 using orders_microservice.Application.Commands.RegisterOrder.types;
+using orders_microservice.Application.Commands.UpdateOrder;
 using orders_microservice.Application.Commands.UpdateOrder.types;
+using orders_microservice.Application.Commands.UpdateOrderStatus;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Controllers.Dtos;
 using orders_microservice.Infrastructure.queries;
 using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
 
-
-namespace order.Infrastructure.controllers
+namespace orders_microservice.Infrastructure.Controllers
 {
     [ApiController]
     [Route("api/order")]
@@ -18,8 +19,7 @@ namespace order.Infrastructure.controllers
         IdService<string> idService, 
         IMessageBrokerService messageBrokerService,
         IEventStore eventStore,
-        IOrderRepository orderRepository,
-        HttpClient httpClient 
+        IOrderRepository orderRepository
     )
         : ControllerBase
     {
@@ -27,7 +27,6 @@ namespace order.Infrastructure.controllers
         private readonly IEventStore _eventStore = eventStore;
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
-        private readonly HttpClient _httpClient = httpClient;
 
         [HttpPost("create")]
         public async Task<ObjectResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)

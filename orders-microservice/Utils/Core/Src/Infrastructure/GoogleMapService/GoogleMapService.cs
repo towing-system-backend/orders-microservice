@@ -1,5 +1,4 @@
 ﻿using orders_microservice.Utils.Core.Src.Application.MapService;
-using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService.types;
 using RestSharp;
 
 namespace orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;

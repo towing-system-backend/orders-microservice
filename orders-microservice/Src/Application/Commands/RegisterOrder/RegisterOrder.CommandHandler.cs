@@ -23,12 +23,12 @@ public class RegisterOrderCommandHandler(
         var id = IdService.GenerateId();
         var order = Order.Create(
             new OrderId(id),
-            new OrderStatus(command.status),
-            new OrderIssueLocation(command.issueLocation),
-            new OrderDestinationLocation(command.destination),
+            new OrderStatus(command.Status),
+            new OrderIssueLocation(command.IssueLocation),
+            new OrderDestinationLocation(command.Destination),
             new OrderTowDriverAssigned("Not assigned"),
-            new OrderDetails(command.details),
-            new OrderClientInformation(command.name, command.image, command.policy, command.phoneNumber)
+            new OrderDetails(command.Details),
+            new OrderClientInformation(command.Name, command.Image, command.Policy, command.PhoneNumber)
         );
 
         var events = order.PullEvents();
