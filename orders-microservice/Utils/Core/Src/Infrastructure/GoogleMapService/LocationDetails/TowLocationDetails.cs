@@ -7,4 +7,5 @@ public record TowLocationDetails
     public double Longitude { get; set; }
     public double Distance { get; set; }
     public string Address { get; set; }
+    public string EstimatedTimeOfArrival { get; set; }
 }

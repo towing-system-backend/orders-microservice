@@ -37,19 +37,19 @@ public class GoogleMapService : ILocationService<TowLocationDetails>
         var client = new RestClient(_client!);
         var originCoordinates = await FindCoordinates(origin);
         var towLocations = new List<TowLocationDetails>();
-        
+
         foreach (var tow in towAddresses)
         {
             var coordinates = await FindCoordinates(tow.Value);
             towLocations.Add(new TowLocationDetails
             {
-                TowId = tow.Key, 
+                TowId = tow.Key,
                 Latitude = coordinates.Latitude,
                 Longitude = coordinates.Longitude,
-                Address = tow.Value 
+                Address = tow.Value
             });
         }
-        
+
         var destinations = string.Join("|", towLocations.Select(c => $"{c.Latitude},{c.Longitude}"));
         var originLatLng = $"{originCoordinates.Latitude},{originCoordinates.Longitude}";
 
@@ -63,14 +63,18 @@ public class GoogleMapService : ILocationService<TowLocationDetails>
 
         var json = JsonDocument.Parse(response.Content!);
         var elements = json.RootElement.GetProperty("rows")[0].GetProperty("elements");
-        
+
         for (var i = 0; i < elements.GetArrayLength(); i++)
-            towLocations[i].Distance = elements[i].GetProperty("distance").GetProperty("value").GetDouble();
-        
+        {
+            towLocations[i] = towLocations[i] with
+            {
+                Distance = elements[i].GetProperty("distance").GetProperty("value").GetDouble(),
+                EstimatedTimeOfArrival = elements[i].GetProperty("duration").GetProperty("text").GetString()
+            };
+        }
+
         return towLocations.OrderBy(t => t.Distance).ToList();
     }
-
-    
     public async Task<TowLocationDetails> FindShortestRoute(string origin, string destination)
     {
         var client = new RestClient(_client!);
@@ -81,16 +85,19 @@ public class GoogleMapService : ILocationService<TowLocationDetails>
 
         var response = await client.ExecuteAsync(request);
         if (!response.IsSuccessful) throw new Exception("Error retrieving route.");
+
         var json = JsonDocument.Parse(response.Content!);
         var route = json.RootElement.GetProperty("routes")[0]
             .GetProperty("legs")[0];
-        
+
         var distance = route.GetProperty("distance").GetProperty("value").GetDouble();
         var duration = route.GetProperty("duration").GetProperty("text").GetString();
+
         return new TowLocationDetails
         {
             Distance = distance,
-            Address = $"Duration: {duration}, Distance: {distance / 1000} km"
+            Address = destination,
+            EstimatedTimeOfArrival = duration 
         };
     }
 }
