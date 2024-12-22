@@ -1,4 +1,6 @@
-namespace Application.Core
+using Application.Core;
+
+namespace orders_microservice.Utils.Core.Src.Domain.Entities
 {
     public abstract class Entity<T>(T id) where T : IValueObject<T>
     {

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using orders_microservice.Utils.Core.Src.Domain.Events;
 
 namespace Application.Core
 {

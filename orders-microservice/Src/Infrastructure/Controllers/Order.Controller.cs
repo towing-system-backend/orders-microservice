@@ -11,6 +11,7 @@ using orders_microservice.Infrastructure.Controllers.Dtos;
 using orders_microservice.Infrastructure.queries;
 using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
 
+
 namespace orders_microservice.Infrastructure.Controllers
 {
     [ApiController]
@@ -114,14 +115,6 @@ namespace orders_microservice.Infrastructure.Controllers
                 );
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
-        }
-        
-        [HttpGet("find/coordinates/{location}")]
-        public async Task<ObjectResult> GetCoordinates(string location)
-        {
-            var service = new GoogleMapService();
-            var coordinates = await service.FindCoordinates(location);
-            return Ok(coordinates);
         }
         
     }
