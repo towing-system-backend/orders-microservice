@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using orders_microservice.Utils.Core.Src.Domain.Events;
 
 namespace orders_microservice.Domain.Events;
 using orders_microservice.Domain.ValueObjects;
