@@ -18,14 +18,14 @@ public class UpdateOrderCommandHandler(
     private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
     public async Task<Result<UpdateOrderResponse>> Execute(UpdateOrderCommand command)
     {
-        var OrderRegistered = await _orderRepository.FindById(command.Id);
-        if (!OrderRegistered.HasValue()) return Result<UpdateOrderResponse>.MakeError(new OrderNotFoundError());
-        var Order = OrderRegistered.Unwrap();
-        if (command.Status != null) Order.UpdateOrderStatus(new OrderStatus(command.Status));
-        if (command.TowDriverAssigned != null) Order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(command.TowDriverAssigned));
-        if (command.Destination != null) Order.UpdateOrderDestinationLocation(new OrderDestinationLocation(command.Destination));
-        var events = Order.PullEvents();
-        await _orderRepository.Save(Order);
+        var orderRegistered = await _orderRepository.FindById(command.Id);
+        if (!orderRegistered.HasValue()) return Result<UpdateOrderResponse>.MakeError(new OrderNotFoundError());
+        var order = orderRegistered.Unwrap();
+        if (command.Status != null) order.UpdateOrderStatus(new OrderStatus(command.Status));
+        if (command.TowDriverAssigned != null) order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(command.TowDriverAssigned));
+        if (command.Destination != null) order.UpdateOrderDestinationLocation(new OrderDestinationLocation(command.Destination));
+        var events = order.PullEvents();
+        await _orderRepository.Save(order);
         await _eventStore.AppendEvents(events);
         await _messageBrokerService.Publish(events);
         return Result<UpdateOrderResponse>.MakeSuccess(new UpdateOrderResponse(command.Id));

@@ -18,12 +18,12 @@ public class UpdateOrderStatusCommandHandler(
     private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
     public async Task<Result<UpdateOrderStatusResponse>> Execute(UpdateOrderStatusCommand command)
     {
-        var OrderRegistered = await _orderRepository.FindById(command.Id);
-        if (!OrderRegistered.HasValue()) return Result<UpdateOrderStatusResponse>.MakeError(new OrderNotFoundError());
-        var Order = OrderRegistered.Unwrap();
-        if (command.Status != null) Order.UpdateOrderStatus(new OrderStatus(command.Status));
-        var events = Order.PullEvents();
-        await _orderRepository.Save(Order);
+        var orderRegistered = await _orderRepository.FindById(command.Id);
+        if (!orderRegistered.HasValue()) return Result<UpdateOrderStatusResponse>.MakeError(new OrderNotFoundError());
+        var order = orderRegistered.Unwrap();
+        if (string.IsNullOrEmpty(command.Status)) order.UpdateOrderStatus(new OrderStatus(command.Status));
+        var events = order.PullEvents();
+        await _orderRepository.Save(order);
         await _eventStore.AppendEvents(events);
         await _messageBrokerService.Publish(events);
         return Result<UpdateOrderStatusResponse>.MakeSuccess(new UpdateOrderStatusResponse(command.Id));

@@ -5,12 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Repositories;
 using System.Text;
-
+using orders_microservice.Utils.Core.Src.Application.LocationService;
+using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
 
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
 builder.Services.AddScoped<IdService<string>, GuidGenerator>();
