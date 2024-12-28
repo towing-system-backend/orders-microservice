@@ -5,6 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Repositories;
 using System.Text;
+using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService;
+using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.States;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+
 
 
 
@@ -18,7 +24,11 @@ builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
 builder.Services.AddScoped<IMessageBrokerService, RabbitMQService>();
 builder.Services.AddControllers(options => {
     options.Filters.Add<GlobalExceptionFilter>();
-}); 
+});
+
+//var certSection = builder.Configuration.GetSection("Kestrel:Endpoints:Https:Certificate");
+//certSection["Path"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Path")!;
+//certSection["Password"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Password")!;
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -34,8 +44,26 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!))
         };
     });
+
+
+
 builder.Services.AddMassTransit(busConfigurator =>
 {
+    busConfigurator.AddSagaStateMachine<OrderStateMachine, OrderStatusStates>()
+        .MongoDbRepository<OrderStatusStates>(r =>
+        {
+            r.Connection = Environment.GetEnvironmentVariable("CONNECTION_URI"); ;
+            r.DatabaseName = Environment.GetEnvironmentVariable("DATABASE_NAME")!;
+            r.CollectionName = "status-events";
+        });
+
+    BsonClassMap.RegisterClassMap<OrderStatusStates>(cm =>
+    {
+        cm.AutoMap();
+        cm.MapIdProperty(x => x.CorrelationId)
+            .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
+    });
+
     busConfigurator.SetKebabCaseEndpointNameFormatter();
     busConfigurator.UsingRabbitMq((context, configurator) =>
     {
@@ -55,6 +83,11 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Order API", Version = "v1" });
 });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000); 
+});
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -64,7 +97,7 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
 app.UseSwagger(c =>

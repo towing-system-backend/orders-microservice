@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using order.Infrastructure.Responses;
 using orders_microservice.Application.Commands.RegisterOrder;
@@ -9,17 +10,17 @@ using orders_microservice.Application.Commands.UpdateOrderStatus;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Controllers.Dtos;
 using orders_microservice.Infrastructure.queries;
-using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
 
 namespace orders_microservice.Infrastructure.Controllers
 {
     [ApiController]
     [Route("api/order")]
     public class OrderController(
-        IdService<string> idService, 
+        IdService<string> idService,
         IMessageBrokerService messageBrokerService,
         IEventStore eventStore,
-        IOrderRepository orderRepository
+        IOrderRepository orderRepository,
+        IPublishEndpoint publishEndpoint
     )
         : ControllerBase
     {
@@ -27,6 +28,7 @@ namespace orders_microservice.Infrastructure.Controllers
         private readonly IEventStore _eventStore = eventStore;
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         [HttpPost("create")]
         public async Task<ObjectResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)
@@ -45,13 +47,19 @@ namespace orders_microservice.Infrastructure.Controllers
             var handler =
                 new ExceptionCatcher<RegisterOrderCommand, RegisterOrderResponse>(
                     new PerfomanceMonitor<RegisterOrderCommand, RegisterOrderResponse>(
-                        new RegisterOrderCommandHandler(_idService,_messageBrokerService, _eventStore, _orderRepository)
+                        new RegisterOrderCommandHandler(
+                            _idService,
+                            _messageBrokerService,
+                            _eventStore,
+                            _orderRepository,
+                            _publishEndpoint
+                        )
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
             return Ok(res.Unwrap());
         }
-        
+
         [HttpPatch("update")]
         public async Task<ObjectResult> UpdateOrder([FromBody] UpdateOrderDto updateOrderDto)
         {
@@ -64,13 +72,18 @@ namespace orders_microservice.Infrastructure.Controllers
             var handler =
                 new ExceptionCatcher<UpdateOrderCommand, UpdateOrderResponse>(
                     new PerfomanceMonitor<UpdateOrderCommand, UpdateOrderResponse>(
-                        new UpdateOrderCommandHandler( _eventStore, _orderRepository, _messageBrokerService)
+                        new UpdateOrderCommandHandler(
+                            _eventStore,
+                            _orderRepository,
+                            _messageBrokerService,
+                            _publishEndpoint
+                        )
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
             return Ok(res.Unwrap());
         }
-        
+
         [HttpPatch("update/status")]
         public async Task<ObjectResult> UpdateOrderByStatus([FromBody] UpdateOrderStatusDto updateOrderStatusDto)
         {
@@ -81,18 +94,23 @@ namespace orders_microservice.Infrastructure.Controllers
             var handler =
                 new ExceptionCatcher<UpdateOrderStatusCommand, UpdateOrderStatusResponse>(
                     new PerfomanceMonitor<UpdateOrderStatusCommand, UpdateOrderStatusResponse>(
-                        new UpdateOrderStatusCommandHandler( _eventStore, _orderRepository, _messageBrokerService)
+                        new UpdateOrderStatusCommandHandler(
+                            _eventStore,
+                            _orderRepository,
+                            _messageBrokerService,
+                            _publishEndpoint
+                        )
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
             return Ok(res.Unwrap());
         }
-        
+
         [HttpGet("find/status/{status}")]
         public async Task<ObjectResult> FindOrderByStatus(string status)
         {
-            var data = new FindOrderByStatusDto{ Status = status };
-            var query = 
+            var data = new FindOrderByStatusDto { Status = status };
+            var query =
                 new ExceptionCatcher<FindOrderByStatusDto, List<FindOrderByStatusResponse>>(
                     new PerfomanceMonitor<FindOrderByStatusDto, List<FindOrderByStatusResponse>>(
                         new FindOrderByStatusQuery()
@@ -101,12 +119,12 @@ namespace orders_microservice.Infrastructure.Controllers
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
-        
+
         [HttpGet("find/{id}")]
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
-            var data = new FindOrderAssignedDto{ Id = id };
-            var query = 
+            var data = new FindOrderAssignedDto { Id = id };
+            var query =
                 new ExceptionCatcher<FindOrderAssignedDto, FindOrderAssignedResponse>(
                     new PerfomanceMonitor<FindOrderAssignedDto, FindOrderAssignedResponse>(
                         new FindOrderAssignedQuery()
@@ -115,14 +133,6 @@ namespace orders_microservice.Infrastructure.Controllers
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
-        
-        [HttpGet("find/coordinates/{location}")]
-        public async Task<ObjectResult> GetCoordinates(string location)
-        {
-            var service = new GoogleMapService();
-            var coordinates = await service.FindCoordinates(location);
-            return Ok(coordinates);
-        }
-        
+
     }
 }

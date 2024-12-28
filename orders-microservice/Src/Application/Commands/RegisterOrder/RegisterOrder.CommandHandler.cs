@@ -1,8 +1,9 @@
 ﻿using Application.Core;
-using MongoDB.Driver;
+using MassTransit;
 using orders_microservice.Application.Commands.RegisterOrder.types;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Domain.ValueObjects;
+using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events;
 
 
 namespace orders_microservice.Application.Commands.RegisterOrder;
@@ -11,16 +12,19 @@ public class RegisterOrderCommandHandler(
     IdService<string> idService,
     IMessageBrokerService messageBrokerService,
     IEventStore eventStore,
-    IOrderRepository orderRepository) :
+    IOrderRepository orderRepository,
+    IPublishEndpoint publishEndpoint
+    ) :
     IService<RegisterOrderCommand, RegisterOrderResponse>
 {
-    private readonly IdService<string> IdService = idService;
+    private readonly IdService<string> _idService = idService;
     private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
-    private readonly IEventStore EventStore = eventStore;
-    private readonly IOrderRepository OrderRepository = orderRepository;
+    private readonly IEventStore _eventStore = eventStore;
+    private readonly IOrderRepository _orderRepository = orderRepository;
+    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     public async Task<Result<RegisterOrderResponse>> Execute(RegisterOrderCommand command)
     {
-        var id = IdService.GenerateId();
+        var id = _idService.GenerateId();
         var order = Order.Create(
             new OrderId(id),
             new OrderStatus(command.Status),
@@ -32,8 +36,9 @@ public class RegisterOrderCommandHandler(
         );
 
         var events = order.PullEvents();
-        await OrderRepository.Save(order);
-        await EventStore.AppendEvents(events);
+        await _publishEndpoint.Publish(new OrderCreatedEvent(Guid.Parse(id)));
+        await _orderRepository.Save(order);
+        await _eventStore.AppendEvents(events);
         await _messageBrokerService.Publish(events);
 
         return Result<RegisterOrderResponse>.MakeSuccess(new RegisterOrderResponse(id));
