@@ -4,11 +4,10 @@ namespace orders_microservice.Infrastructure.Controllers.Dtos;
 
 public record UpdateOrderStatusDto
 {
-    
     [Required] [StringLength(128, MinimumLength = 4)]
-    public string Id { get; init; }
+    public string Id;
 
     [Required] [StringLength(64, MinimumLength = 4)]
-    public string Status { get; init; }
-    
+    public string Status;
+
 }

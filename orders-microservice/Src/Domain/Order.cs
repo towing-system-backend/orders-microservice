@@ -3,6 +3,10 @@ using Application.Core;
 using orders_microservice.Domain.Events;
 using orders_microservice.Domain.Exceptions;
 using orders_microservice.Domain.ValueObjects;
+using orders_microservice.Src.Domain.Entities.AdditionalCost;
+using orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects;
+using orders_microservice.Src.Domain.Events;
+using orders_microservice.Src.Domain.ValueObjects;
 
 public class Order : AggregateRoot<OrderId>
 {
@@ -13,6 +17,8 @@ public class Order : AggregateRoot<OrderId>
 	private OrderTowDriverAssigned? TowDriverAssigned;
 	private OrderDetails Details;
 	private OrderClientInformation ClientInformation;
+	private List<AdditionalCost>? AdditionalCosts;
+	private OrderTotalCost TotalCost;
 
 	private Order(OrderId OrderId) : base(OrderId)
 	{
@@ -40,6 +46,8 @@ public class Order : AggregateRoot<OrderId>
 	public OrderTowDriverAssigned GetOrderTowDriverAssigned => TowDriverAssigned!;
 	public OrderDetails GetOrderDetails => Details;
 	public OrderClientInformation GetOrderClientInformation => ClientInformation;
+	public List<AdditionalCost>? GetAdditionalCosts => AdditionalCosts;
+	public OrderTotalCost GetOrderTotalCost => TotalCost;
 
 	public static Order Create(
 		OrderId id, 
@@ -49,6 +57,8 @@ public class Order : AggregateRoot<OrderId>
 		OrderTowDriverAssigned todriverAssigned,
 		OrderDetails details,
 		OrderClientInformation clientInformation,
+		OrderTotalCost totalCost,
+		List<AdditionalCost>? additionalCosts,
 		bool fromPersistence = false
 		)
 	{
@@ -62,7 +72,9 @@ public class Order : AggregateRoot<OrderId>
 				DestinationLocation = destinationLocation,
 				TowDriverAssigned = todriverAssigned,
 				Details = details,
-				ClientInformation = clientInformation
+				ClientInformation = clientInformation,
+				TotalCost = totalCost,
+				AdditionalCosts = additionalCosts
 			};
 		}
 
@@ -74,8 +86,10 @@ public class Order : AggregateRoot<OrderId>
 				issueLocation, 
 				destinationLocation,
 				details,
-				clientInformation
-			)
+				clientInformation,
+                totalCost,
+				additionalCosts!
+            )
 		);
 		return order;
 	}
@@ -102,6 +116,8 @@ public class Order : AggregateRoot<OrderId>
         DestinationLocation = new OrderDestinationLocation(context.Destination);
         Details = new OrderDetails(context.Details);
         ClientInformation = new OrderClientInformation(context.Name, context.Image, context.PolicyId, context.PhoneNumber);
+		TotalCost = new OrderTotalCost(context.TotalCost);
+        AdditionalCosts = context.AdditionalCosts;
     }
 
     private void OnOrderStatusUpdatedEvent(OrderStatusUpdated context)
@@ -118,4 +134,38 @@ public class Order : AggregateRoot<OrderId>
 	{
 		DestinationLocation = new OrderDestinationLocation(context.DestinationLocation);
 	}
+	
+	public void CreateAdditionalCost(
+		AdditionalCostId id,
+		AdditionalCostName name,
+		AdditionalCostCategory category,
+        AdditionalCostAmount amount
+	)
+	{
+		Apply(AdditionalCostCreated.CreateEvent(Id, id, amount, category, name));
+	}
+
+	private void OnCreateAdditionalCostEvent(AdditionalCostCreated context)
+    {
+		if(AdditionalCosts == null) AdditionalCosts = new List<AdditionalCost>();
+
+        AdditionalCosts.Add(
+			new AdditionalCost(
+				new AdditionalCostId(context.Id),
+				new AdditionalCostAmount(context.Amount),
+                new AdditionalCostName(context.Name),
+                new AdditionalCostCategory(context.Category)
+			)
+		);
+    }
+
+	public void RemoveAdditionalCost(AdditionalCostId id)
+    {
+        Apply(AdditionalCostRemoved.CreateEvent(Id, id));
+    }
+
+    private void OnAdditionalCostRemovedEvent(AdditionalCostRemoved context)
+    {
+        AdditionalCosts.RemoveAll(x => x.GetAdditionalCostId.GetValue() == context.Id);
+    }
 }

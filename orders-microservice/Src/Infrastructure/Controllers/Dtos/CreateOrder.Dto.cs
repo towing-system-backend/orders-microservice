@@ -5,26 +5,26 @@ namespace orders_microservice.Infrastructure.Controllers.Dtos;
 public record CreateOrderDto
 {
     [Required] [StringLength(64, MinimumLength = 4)]
-    public string Status { get; init; }
+    public string Status;
 
     [Required] [StringLength(512, MinimumLength = 8)]
-    public string IssueLocation { get; init; }
+    public string IssueLocation;
 
     [Required] [StringLength(512, MinimumLength = 4)]
-    public string Destination { get; init; }
+    public string Destination;
 
     [Required] [StringLength(512, MinimumLength = 4)]
-    public string Details { get; init; }
+    public string Details;
 
     [Required] [StringLength(64, MinimumLength = 8)]
-    public string Name { get; init; }
+    public string Name;
 
     [Required] [StringLength(2048, MinimumLength = 8)]
-    public string Image { get; init; }
+    public string Image;
 
     [Required] [StringLength(128, MinimumLength = 32)]
-    public string Policy { get; init; }
+    public string Policy;
 
     [Required] [StringLength(64, MinimumLength = 8)]
-    public string PhoneNumber { get; init; }
+    public string PhoneNumber;
 }

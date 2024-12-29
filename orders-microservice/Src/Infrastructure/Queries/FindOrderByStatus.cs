@@ -22,6 +22,7 @@ public class FindOrderByStatusQuery : IService<FindOrderByStatusDto, List<FindOr
         var orders = await _orderCollection.Find(filter)
             .Project(order => new FindOrderByStatusResponse
             {
+                Id = order.OrderId,
                 Status = order.Status,
                 IssueLocation = order.IssueLocation,
                 Destination = order.Destination,
@@ -31,6 +32,14 @@ public class FindOrderByStatusQuery : IService<FindOrderByStatusDto, List<FindOr
                 Image = order.Image,
                 Policy = order.PolicyId,
                 PhoneNumber = order.PhoneNumber,
+                TotalCost = order.TotalCost,
+                AdditionalCosts = order.AdditionalCosts.Select(cost => new AdditonalCostResponse
+                {
+                    Id = cost.AdditionalCostId,
+                    Name = cost.Name,
+                    Category = cost.Category,
+                    Amount = cost.Amount
+                }).ToList()
             })
             .ToListAsync();
     
