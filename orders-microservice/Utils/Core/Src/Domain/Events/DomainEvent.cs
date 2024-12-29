@@ -1,4 +1,4 @@
-namespace Application.Core
+namespace orders_microservice.Utils.Core.Src.Domain.Events
 {
     public abstract class DomainEvent(string publisherId, string type, Object context)
     {

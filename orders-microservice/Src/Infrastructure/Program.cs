@@ -11,12 +11,10 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
 builder.Services.AddScoped<IdService<string>, GuidGenerator>();

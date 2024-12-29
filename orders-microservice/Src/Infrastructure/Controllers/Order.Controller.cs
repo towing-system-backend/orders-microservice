@@ -11,6 +11,7 @@ using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Controllers.Dtos;
 using orders_microservice.Infrastructure.queries;
 
+
 namespace orders_microservice.Infrastructure.Controllers
 {
     [ApiController]
@@ -133,6 +134,5 @@ namespace orders_microservice.Infrastructure.Controllers
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
-
     }
 }

@@ -39,7 +39,6 @@ public class UpdateOrderStatusCommandHandler(
             await _publishEndpoint.Publish(new OrderCancelledEvent(Guid.Parse(order.GetOrderId.GetValue())));
         }
 
-        if (command.Status != null) order.UpdateOrderStatus(new OrderStatus(command.Status));
         var events = order.PullEvents();
         await _orderRepository.Save(order);
         await _eventStore.AppendEvents(events);
