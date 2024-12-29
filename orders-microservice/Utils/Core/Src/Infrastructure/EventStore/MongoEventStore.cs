@@ -1,6 +1,7 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
+using Newtonsoft.Json;
 using orders_microservice.Utils.Core.Src.Domain.Events;
+
 
 namespace Application.Core
 {
@@ -26,8 +27,8 @@ namespace Application.Core
             var mappedEvents = events.Select(e => 
                 new MongoEvent(
                     e.PublisherId,                  
-                    e.Type,                        
-                    e.Context.ToBsonDocument().ToString(), 
+                    e.Type,
+                    JsonConvert.SerializeObject(e.Context, Formatting.Indented), 
                     e.OcurredDate                
                 )
             );

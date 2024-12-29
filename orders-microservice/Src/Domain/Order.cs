@@ -37,7 +37,7 @@ public class Order : AggregateRoot<OrderId>
 	public OrderStatus GetOrderStatus => Status;
 	public OrderIssueLocation GetOrderIssueLocation => IssueLocation;
 	public OrderDestinationLocation GetOrderDestinationLocation => DestinationLocation;
-	public OrderTowDriverAssigned GetOrderTowDriverAssigned => TowDriverAssigned;
+	public OrderTowDriverAssigned GetOrderTowDriverAssigned => TowDriverAssigned!;
 	public OrderDetails GetOrderDetails => Details;
 	public OrderClientInformation GetOrderClientInformation => ClientInformation;
 
@@ -67,25 +67,17 @@ public class Order : AggregateRoot<OrderId>
 		}
 
 		Order order = new Order(id);
-		order.Apply(OrderCreated.CreateEvent(
-			id, 
-			status, 
-			issueLocation, 
-			destinationLocation,
-			details,
-			clientInformation
+		order.Apply(
+			OrderCreated.CreateEvent(
+				id, 
+				status, 
+				issueLocation, 
+				destinationLocation,
+				details,
+				clientInformation
 			)
 		);
 		return order;
-	}
-
-	private void OnOrderCreatedEvent(OrderCreated context)
-	{
-		Status = new OrderStatus(context.Status);
-		IssueLocation = new OrderIssueLocation(context.IssueLocation);
-		DestinationLocation = new OrderDestinationLocation(context.Destination);
-		Details = new OrderDetails(context.Details);
-		ClientInformation = new OrderClientInformation(context.Name, context.Image, context.PolicyId, context.PhoneNumber);	
 	}
 	
 	public void UpdateOrderStatus(OrderStatus status)
@@ -102,8 +94,17 @@ public class Order : AggregateRoot<OrderId>
 	{
 		Apply(OrderDestinationLocationUpdated.CreateEvent(Id, destinationLocation));
 	}
-	
-	private void OnOrderStatusUpdatedEvent(OrderStatusUpdated context)
+
+    private void OnOrderCreatedEvent(OrderCreated context)
+    {
+        Status = new OrderStatus(context.Status);
+        IssueLocation = new OrderIssueLocation(context.IssueLocation);
+        DestinationLocation = new OrderDestinationLocation(context.Destination);
+        Details = new OrderDetails(context.Details);
+        ClientInformation = new OrderClientInformation(context.Name, context.Image, context.PolicyId, context.PhoneNumber);
+    }
+
+    private void OnOrderStatusUpdatedEvent(OrderStatusUpdated context)
 	{
 		Status = new OrderStatus(context.Status);
 	}
