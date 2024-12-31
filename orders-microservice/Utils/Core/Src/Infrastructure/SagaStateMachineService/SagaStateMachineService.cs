@@ -17,6 +17,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
     public Event<OrderCreatedEvent> OrderCreated { get; private set; }
     public Event<UpdateOrderStatusEvent> OrderUpdated { get; private set; }
     public Event<OrderCancelledEvent> OrderCancelled { get; private set; }
+    public Event<OrderRejectedEvent> OrderRejected { get; private set; }
 
 
     public OrderStateMachine()
@@ -27,6 +28,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
         Event(() => OrderUpdated, x => x.CorrelateById(order =>
             order.Message.OrderId));
         Event(() => OrderCancelled, x => x.CorrelateById(order =>
+            order.Message.OrderId));
+        Event(() => OrderRejected, x => x.CorrelateById(order =>
             order.Message.OrderId));
 
         Initially(
@@ -55,10 +58,11 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
                     context.Saga.LastStateChange = DateTime.UtcNow;
                 })
                 .TransitionTo(Accepted),
-            When(OrderCancelled)
+            When(OrderRejected)
                 .Then(context =>
                 {
                     context.Saga.LastStateChange = DateTime.UtcNow;
+                    context.Saga.DriversThatRejected.Add(context.Message.TowDriverId!);
                 })
                 .TransitionTo(ToAssign)
         );
@@ -84,6 +88,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
                 {
                     context.Saga.LastStateChange = DateTime.UtcNow;
                 })
+                .TransitionTo(Cancelled)
         );
 
         During(InProgress,
@@ -98,6 +103,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
                 {
                     context.Saga.LastStateChange = DateTime.UtcNow;
                 })
+                .TransitionTo(Cancelled)
         );
 
         During(Completed,
@@ -111,6 +117,14 @@ public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
 
         During(Paid,
             When(OrderUpdated)
+                .Then(context =>
+                {
+                    context.Saga.LastStateChange = DateTime.UtcNow;
+                })
+        );
+
+        During(Cancelled,
+            When(OrderCancelled)
                 .Then(context =>
                 {
                     context.Saga.LastStateChange = DateTime.UtcNow;

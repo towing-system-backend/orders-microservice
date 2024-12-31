@@ -6,7 +6,7 @@ using orders_microservice.Domain.ValueObjects;
 
 public class Order : AggregateRoot<OrderId>
 {
-	private OrderId Id; 
+	private new OrderId Id; 
 	private OrderStatus Status;
 	private OrderIssueLocation IssueLocation;
 	private OrderDestinationLocation DestinationLocation;
