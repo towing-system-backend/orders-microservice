@@ -1,5 +1,6 @@
-﻿using Application.Core;
-using orders_microservice.Domain.ValueObjects;
+﻿using orders_microservice.Domain.ValueObjects;
+using orders_microservice.Src.Domain.Entities.AdditionalCost;
+using orders_microservice.Src.Domain.ValueObjects;
 using orders_microservice.Utils.Core.Src.Domain.Events;
 
 namespace orders_microservice.Domain.Events;
@@ -14,7 +15,9 @@ public class OrderCreated(
     string name,
     string image,
     string policyId,
-    string phoneNumber
+    string phoneNumber,
+    decimal totalCost,
+    List<AdditionalCost>? additionalCosts
     )
 {
     public readonly string Status = status;
@@ -25,6 +28,8 @@ public class OrderCreated(
     public readonly string Image = image;
     public readonly string PolicyId = policyId;
     public readonly string PhoneNumber = phoneNumber;
+    public readonly decimal TotalCost = totalCost;
+    public readonly List<AdditionalCost>? AdditionalCosts = new();
 
     public static OrderCreatedEvent CreateEvent(
         OrderId publisherId,
@@ -32,7 +37,9 @@ public class OrderCreated(
         OrderIssueLocation issueLocation,
         OrderDestinationLocation destination,
         OrderDetails details,
-        OrderClientInformation clientInformation
+        OrderClientInformation clientInformation,
+        OrderTotalCost totalCost,
+        List<AdditionalCost> additionalCosts
     )
     {
         return new OrderCreatedEvent(
@@ -46,7 +53,9 @@ public class OrderCreated(
                 clientInformation.GetClientName(),
                 clientInformation.GetClientImage(),
                 clientInformation.GetClientPolicyId(),
-                clientInformation.GetClientPhoneNumber()
+                clientInformation.GetClientPhoneNumber(),
+                totalCost.GetValue(),
+                null
             )
         );
     }
