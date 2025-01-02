@@ -10,6 +10,12 @@ using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using orders_microservice.Utils.Core.Src.Application.LocationService;
+using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
+using System.Text.Json.Nodes;
+using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
+using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Repositories;
+using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
@@ -20,6 +26,8 @@ builder.Services.AddScoped<IEventStore, MongoEventStore>();
 builder.Services.AddScoped<IdService<string>, GuidGenerator>();
 builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
 builder.Services.AddScoped<IMessageBrokerService, RabbitMQService>();
+builder.Services.AddScoped<ILocationService<JsonNode>, GoogleMapService>();
+builder.Services.AddScoped<ISagaStateMachineService<string>, SagaStateMachineRepository>();
 builder.Services.AddControllers(options => {
     options.Filters.Add<GlobalExceptionFilter>();
 });
@@ -55,7 +63,15 @@ builder.Services.AddMassTransit(busConfigurator =>
             r.CollectionName = "status-events";
         });
 
+    
     BsonClassMap.RegisterClassMap<OrderStatusStates>(cm =>
+    {
+        cm.AutoMap();
+        cm.MapIdProperty(x => x.CorrelationId)
+            .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
+    });
+
+    BsonClassMap.RegisterClassMap<MongoStates>(cm =>
     {
         cm.AutoMap();
         cm.MapIdProperty(x => x.CorrelationId)

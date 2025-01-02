@@ -10,6 +10,11 @@ using orders_microservice.Application.Commands.UpdateOrderStatus;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Infrastructure.Controllers.Dtos;
 using orders_microservice.Infrastructure.queries;
+using orders_microservice.Src.Application.Commands.AssignTowDriver;
+using orders_microservice.Src.Application.Commands.AssignTowDriver.Types;
+using orders_microservice.Utils.Core.Src.Application.LocationService;
+using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
+using System.Text.Json.Nodes;
 using orders_microservice.Src.Application.Commands.RemoveAdditionalCost;
 using orders_microservice.Src.Application.Commands.RemoveAdditionalCost.Types;
 using orders_microservice.Src.Infrastructure.Controllers.Dtos;
@@ -24,7 +29,9 @@ namespace orders_microservice.Infrastructure.Controllers
         IMessageBrokerService messageBrokerService,
         IEventStore eventStore,
         IOrderRepository orderRepository,
-        IPublishEndpoint publishEndpoint
+        IPublishEndpoint publishEndpoint,
+        ILocationService<JsonNode> locationService,
+        ISagaStateMachineService<string> sagaStateMachineService
     )
         : ControllerBase
     {
@@ -33,6 +40,8 @@ namespace orders_microservice.Infrastructure.Controllers
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly ILocationService<JsonNode> _locationService = locationService;
+        private readonly ISagaStateMachineService<string> _sagaStateMachineService = sagaStateMachineService;
 
         [HttpPost("create")]
         public async Task<ObjectResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)
@@ -118,16 +127,35 @@ namespace orders_microservice.Infrastructure.Controllers
             return Ok(res.Unwrap());
         }
 
+        [HttpPatch("assign/tow")]
+        public async Task<ObjectResult> AssignTowDriver([FromBody] AssignTowDriverDto assignTowDriverDto)
+        {
+            var command = new AssignTowDriverCommand(
+                assignTowDriverDto.OrderId,
+                assignTowDriverDto.TowsLocation
+            );
+            var handler =
+                new ExceptionCatcher<AssignTowDriverCommand, AssignTowDriverResponse>(
+                    new PerfomanceMonitor<AssignTowDriverCommand, AssignTowDriverResponse>(
+                        new AssignTowDriverCommandHandler(
+                            _eventStore,
+                            _orderRepository,
+                            _publishEndpoint,
+                            _messageBrokerService,
+                            _locationService,
+                            _sagaStateMachineService
+                        )
+                    ), ExceptionParser.Parse
+                );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
+        }
+
         [HttpGet("find/status/{status}")]
         public async Task<ObjectResult> FindOrderByStatus(string status)
         {
             var data = new FindOrderByStatusDto { Status = status };
-            var query =
-                new ExceptionCatcher<FindOrderByStatusDto, List<FindOrderByStatusResponse>>(
-                    new PerfomanceMonitor<FindOrderByStatusDto, List<FindOrderByStatusResponse>>(
-                        new FindOrderByStatusQuery()
-                    ), ExceptionParser.Parse
-                );
+            var query = new FindOrderByStatusQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
@@ -136,15 +164,11 @@ namespace orders_microservice.Infrastructure.Controllers
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
             var data = new FindOrderAssignedDto { Id = id };
-            var query =
-                new ExceptionCatcher<FindOrderAssignedDto, FindOrderAssignedResponse>(
-                    new PerfomanceMonitor<FindOrderAssignedDto, FindOrderAssignedResponse>(
-                        new FindOrderAssignedQuery()
-                    ), ExceptionParser.Parse
-                );
+            var query = new FindOrderAssignedQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
+        
 
         [HttpDelete("delete/additionalcost")]
         public async Task<ObjectResult> RemoveAdditionalCost([FromBody] RemoveAdditionalCostDto removeAdditionalCostDto)
