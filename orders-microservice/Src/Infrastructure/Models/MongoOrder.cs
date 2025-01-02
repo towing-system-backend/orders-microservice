@@ -12,7 +12,10 @@ public class MongoOrder(
     string name,
     string image,
     string policy,
-    string phoneNumber)
+    string phoneNumber,
+    decimal totalCost,
+    List<MongoAdditionalCost> additionalCosts
+)
 {
     [BsonId] 
     public string OrderId = id;
@@ -25,4 +28,20 @@ public class MongoOrder(
     public string Image = image;
     public string PolicyId = policy;
     public string PhoneNumber = phoneNumber;
+    public decimal TotalCost = totalCost;
+    public List<MongoAdditionalCost>? AdditionalCosts = additionalCosts ?? new List<MongoAdditionalCost>();
+}
+
+public class MongoAdditionalCost(
+    string id,
+    string name,
+    string category,
+    decimal amount
+)
+{
+    [BsonId]
+    public string AdditionalCostId = id;
+    public string Name = name;
+    public string Category = category;
+    public decimal Amount = amount;
 }

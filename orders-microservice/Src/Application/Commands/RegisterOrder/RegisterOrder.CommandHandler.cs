@@ -3,6 +3,8 @@ using MassTransit;
 using orders_microservice.Application.Commands.RegisterOrder.types;
 using orders_microservice.Domain.Repositories;
 using orders_microservice.Domain.ValueObjects;
+using orders_microservice.Src.Domain.Entities.AdditionalCost;
+using orders_microservice.Src.Domain.ValueObjects;
 using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events;
 
 
@@ -32,7 +34,9 @@ public class RegisterOrderCommandHandler(
             new OrderDestinationLocation(command.Destination),
             new OrderTowDriverAssigned("Not assigned"),
             new OrderDetails(command.Details),
-            new OrderClientInformation(command.Name, command.Image, command.Policy, command.PhoneNumber)
+            new OrderClientInformation(command.Name, command.Image, command.Policy, command.PhoneNumber),
+            new OrderTotalCost(0),
+            null
         );
 
         var events = order.PullEvents();

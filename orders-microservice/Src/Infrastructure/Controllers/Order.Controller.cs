@@ -15,6 +15,9 @@ using orders_microservice.Src.Application.Commands.AssignTowDriver.Types;
 using orders_microservice.Utils.Core.Src.Application.LocationService;
 using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
 using System.Text.Json.Nodes;
+using orders_microservice.Src.Application.Commands.RemoveAdditionalCost;
+using orders_microservice.Src.Application.Commands.RemoveAdditionalCost.Types;
+using orders_microservice.Src.Infrastructure.Controllers.Dtos;
 
 
 namespace orders_microservice.Infrastructure.Controllers
@@ -77,12 +80,20 @@ namespace orders_microservice.Infrastructure.Controllers
                 updateOrderDto.Id,
                 updateOrderDto.Status,
                 updateOrderDto.TowDriverAssigned,
-                updateOrderDto.Destination
+                updateOrderDto.Destination,
+                updateOrderDto.AdditionalCosts.Select(
+                    x => new AdditionalCostCommand(
+                        x.Name,
+                        x.Category,
+                        x.Amount.Value 
+                    )
+                ).ToList()
             );
             var handler =
                 new ExceptionCatcher<UpdateOrderCommand, UpdateOrderResponse>(
                     new PerfomanceMonitor<UpdateOrderCommand, UpdateOrderResponse>(
                         new UpdateOrderCommandHandler(
+                            _idService,
                             _eventStore,
                             _orderRepository,
                             _messageBrokerService,
@@ -158,5 +169,26 @@ namespace orders_microservice.Infrastructure.Controllers
             return Ok(res.Unwrap());
         }
         
+
+        [HttpDelete("delete/additionalcost")]
+        public async Task<ObjectResult> RemoveAdditionalCost([FromBody] RemoveAdditionalCostDto removeAdditionalCostDto)
+        {
+            var command = new RemoveAdditionalCostCommand(
+                removeAdditionalCostDto.OrderId,
+                removeAdditionalCostDto.AdditionalCostId
+            );
+            var handler =
+                new ExceptionCatcher<RemoveAdditionalCostCommand, RemoveAdditionalCostResponse>(
+                    new PerfomanceMonitor<RemoveAdditionalCostCommand, RemoveAdditionalCostResponse>(
+                        new RemoveAdditionalCostCommandHandler(
+                            _eventStore,
+                            _orderRepository,
+                            _messageBrokerService
+                        )
+                    ), ExceptionParser.Parse
+                );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
+        }
     }
 }
