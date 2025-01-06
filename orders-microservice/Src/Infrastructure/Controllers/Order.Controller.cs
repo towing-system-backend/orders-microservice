@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;
 using Order.Domain;
 using Order.Application; 
+using orders_microservice.Utils.Core.Src.Application.NotificationService;
+
 
 namespace Order.Infrastructure
 {
@@ -16,6 +18,7 @@ namespace Order.Infrastructure
         IEventStore eventStore,
         IOrderRepository orderRepository,
         IPublishEndpoint publishEndpoint,
+        INotificationService notificationService,
         ILocationService<JsonNode> locationService,
         ISagaStateMachineService<string> sagaStateMachineService,
         IPerformanceLogsRepository performanceLogsRepository
@@ -29,6 +32,7 @@ namespace Order.Infrastructure
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly ILocationService<JsonNode> _locationService = locationService;
         private readonly ISagaStateMachineService<string> _sagaStateMachineService = sagaStateMachineService;
+        private readonly INotificationService _notificationService = notificationService;
         private readonly IPerformanceLogsRepository _performanceLogsRepository = performanceLogsRepository;
 
         [HttpPost("create")]
@@ -202,6 +206,20 @@ namespace Order.Infrastructure
             var res = await handler.Execute(command);
             
             return Ok(res.Unwrap());
+        }
+
+        [HttpPost("send-notification")]
+        public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
+        {
+            try
+            {
+                await _notificationService.SendNotification(deviceToken, title, body);
+                return Ok("Notification sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending notification: {ex.Message}");
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using Order.Application;
 
 namespace Order.Infrastructure
 {
-    public class FindOrderByStatusQuery : IService<FindOrderByStatusDto, List<FindOrderByStatusResponse>>
+    public class FindOrderByStatusQuery 
     {
         private readonly IMongoCollection<MongoOrder> _orderCollection;
         public FindOrderByStatusQuery()
