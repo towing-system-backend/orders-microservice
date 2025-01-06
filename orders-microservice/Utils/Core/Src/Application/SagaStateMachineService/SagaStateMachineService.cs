@@ -1,4 +1,4 @@
-﻿namespace orders_microservice.Utils.Core.Src.Application.SagaStateMachineService
+﻿namespace Application.Core
 {
     public interface ISagaStateMachineService<T>
     {

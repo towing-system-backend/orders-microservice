@@ -1,7 +1,9 @@
 ﻿using Application.Core;
-namespace orders_microservice.Domain.Exceptions;
 
-public class InvalidOrderClientInformationNameException : DomainException
+namespace Order.Domain
 {
-    public InvalidOrderClientInformationNameException() : base("Invalid client name."){ }
+    public class InvalidOrderClientInformationNameException : DomainException
+    {
+        public InvalidOrderClientInformationNameException() : base("Invalid client name.") { }
+    }
 }

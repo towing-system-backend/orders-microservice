@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace orders_microservice.Infrastructure.Controllers.Dtos;
-
-public record AssignTowDriverDto
+namespace Order.Infrastructure
 {
-    [Required][StringLength(128, MinimumLength = 8)]
-    public string OrderId { get; init; }
-
-    [Required]
-    public Dictionary<string,string> TowsLocation { get; init; }
-};
+    public record AssignTowDriverDto
+    (
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string OrderId
+    );
+}

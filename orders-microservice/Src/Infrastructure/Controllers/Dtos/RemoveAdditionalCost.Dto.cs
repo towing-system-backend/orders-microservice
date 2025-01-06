@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace orders_microservice.Src.Infrastructure.Controllers.Dtos
+namespace Order.Infrastructure
 {
     public record RemoveAdditionalCostDto
-    {
-        [Required][StringLength(128, MinimumLength = 4)]
-        public string OrderId;
+    (
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string OrderId,
 
-        [Required][StringLength(128, MinimumLength = 4)]
-        public string AdditionalCostId;
-    }
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string AdditionalCostId
+    );
 }

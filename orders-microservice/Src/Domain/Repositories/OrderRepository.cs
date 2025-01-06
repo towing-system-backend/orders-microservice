@@ -1,10 +1,11 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Domain.Repositories;
-
-public interface IOrderRepository
+namespace Order.Domain
 {
-    Task Save(Order order);
-    Task<Optional<Order>> FindById(string orderId);
+    public interface IOrderRepository
+    {
+        Task Save(Order order);
+        Task<Optional<Order>> FindById(string orderId);
 
+    }
 }

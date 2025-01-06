@@ -1,22 +1,22 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.Exceptions;
 
-namespace orders_microservice.Domain.ValueObjects;
-
-public class OrderDestinationLocation : IValueObject<OrderDestinationLocation>
+namespace Order.Domain
 {
-    private readonly string _Value;
-
-    public OrderDestinationLocation(string value)
+    public class OrderDestinationLocation : IValueObject<OrderDestinationLocation>
     {
-        if (value is not string)
-        {
-            throw new InvalidOrderDestinationException();
-        }
-        _Value = value;
-    }
-    
-    public string GetValue() => _Value;
+        private readonly string _value;
 
-    public bool Equals(OrderDestinationLocation other) => _Value == other._Value;
+        public OrderDestinationLocation(string value)
+        {
+            if (value is not string)
+            {
+                throw new InvalidOrderDestinationException();
+            }
+
+            _value = value;
+        }
+
+        public string GetValue() => _value;
+        public bool Equals(OrderDestinationLocation other) => _value == other._value;
+    }
 }
