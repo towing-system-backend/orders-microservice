@@ -1,21 +1,22 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.Exceptions;
-namespace orders_microservice.Domain.ValueObjects;
 
-public class OrderId : IValueObject<OrderId>
+namespace Order.Domain
 {
-    private readonly string _Value;
-
-    public OrderId(string value)
+    public class OrderId : IValueObject<OrderId>
     {
-        if (!GuidEx.IsGuid(value))
-        {
-            throw new InvalidOrderIdException();
-        }
-        _Value = value;
-    }
-    
-    public string GetValue() => _Value;
+        private readonly string _value;
 
-    public bool Equals(OrderId other) => _Value == other._Value;
+        public OrderId(string value)
+        {
+            if (!GuidEx.IsGuid(value))
+            {
+                throw new InvalidOrderIdException();
+            }
+
+            _value = value;
+        }
+
+        public string GetValue() => _value;
+        public bool Equals(OrderId other) => _value == other._value;
+    }
 }

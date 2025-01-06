@@ -1,3 +1,4 @@
-﻿namespace orders_microservice.Application.Commands.RegisterOrder.types;
-
-public record RegisterOrderResponse(string Id);
+﻿namespace Order.Application
+{
+    public record RegisterOrderResponse(string Id);
+}

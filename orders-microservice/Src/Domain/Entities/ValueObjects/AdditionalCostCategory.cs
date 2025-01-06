@@ -1,11 +1,10 @@
 ﻿using Application.Core;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects
+namespace Order.Domain
 {
     public class AdditionalCostCategory : IValueObject<AdditionalCostCategory>
     {
-        private readonly string _Value;
+        private readonly string _value;
 
         public AdditionalCostCategory(string value)
         {
@@ -13,11 +12,10 @@ namespace orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects
             {
                 throw new InvalidAdditionalCostCategoryException();
             }
-            _Value = value;
+            _value = value;
         }
 
-        public string GetValue() => _Value;
-
-        public bool Equals(AdditionalCostCategory other) => _Value == other._Value;
+        public string GetValue() => _value;
+        public bool Equals(AdditionalCostCategory other) => _value == other._value;
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.ValueObjects;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects;
-using orders_microservice.Utils.Core.Src.Domain.Entities;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost
+namespace Order.Domain
 {
     public class AdditionalCost
     (
@@ -14,18 +10,15 @@ namespace orders_microservice.Src.Domain.Entities.AdditionalCost
         AdditionalCostCategory category
     ) : Entity<AdditionalCostId>(id)
     {
-        protected AdditionalCostId Id = id;
-        protected AdditionalCostAmount Amount =  amount;
-        protected AdditionalCostName Name = name;
-        protected AdditionalCostCategory Category = category;
+        private readonly AdditionalCostId _id = id;
+        private readonly AdditionalCostAmount _amount =  amount;
+        private readonly AdditionalCostName _name = name;
+        private readonly AdditionalCostCategory _category = category;
         
-        public bool Equals(AdditionalCost other)
-        {
-            return Id.Equals(other.Id);
-        }
-        public AdditionalCostId GetAdditionalCostId => Id;
-        public AdditionalCostAmount GetAdditionalCostAmount => Amount;
-        public AdditionalCostName GetAdditionalCostName => Name;
-        public AdditionalCostCategory GetAdditionalCostCategory => Category;
+        public bool Equals(AdditionalCost other) => _id.Equals(other._id);
+        public AdditionalCostId GetAdditionalCostId() => _id;
+        public AdditionalCostAmount GetAdditionalCostAmount() => _amount;
+        public AdditionalCostName GetAdditionalCostName() => _name;
+        public AdditionalCostCategory GetAdditionalCostCategory() => _category;
     }
 }

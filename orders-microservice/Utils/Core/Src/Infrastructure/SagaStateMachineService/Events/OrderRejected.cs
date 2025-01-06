@@ -1,4 +1,4 @@
-﻿namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events
+﻿namespace Application.Core
 {
     public class OrderRejectedEvent
     {

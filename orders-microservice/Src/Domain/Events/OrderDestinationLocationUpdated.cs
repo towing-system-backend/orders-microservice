@@ -1,21 +1,21 @@
 ﻿using Application.Core;
-using orders_microservice.Utils.Core.Src.Domain.Events;
 
-namespace orders_microservice.Domain.Events;
-using orders_microservice.Domain.ValueObjects; 
-public class OrderDestinationLocationUpdatedEvent(string publisherId, string type, OrderDestinationLocationUpdated context) 
-    : DomainEvent(publisherId, type, context) { } 
-public class OrderDestinationLocationUpdated(string destinationLocation)
+namespace Order.Domain
 {
-    public readonly string DestinationLocation = destinationLocation;
-    public static OrderDestinationLocationUpdatedEvent CreateEvent(OrderId publisherId, OrderDestinationLocation destinationLocation)
+    public class OrderDestinationLocationUpdatedEvent(string publisherId, string type, OrderDestinationLocationUpdated context) : DomainEvent(publisherId, type, context) { }
+
+    public class OrderDestinationLocationUpdated(string destinationLocation)
     {
-        return new OrderDestinationLocationUpdatedEvent(
-            publisherId.GetValue(),
-            typeof(OrderDestinationLocationUpdated).Name,
-            new OrderDestinationLocationUpdated(
-                destinationLocation.GetValue()
-            )
-        );
+        public readonly string DestinationLocation = destinationLocation;
+        public static OrderDestinationLocationUpdatedEvent CreateEvent(OrderId publisherId, OrderDestinationLocation destinationLocation)
+        {
+            return new OrderDestinationLocationUpdatedEvent(
+                publisherId.GetValue(),
+                typeof(OrderDestinationLocationUpdated).Name,
+                new OrderDestinationLocationUpdated(
+                    destinationLocation.GetValue()
+                )
+            );
+        }
     }
 }

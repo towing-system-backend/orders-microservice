@@ -1,24 +1,22 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.Exceptions;
 
-namespace orders_microservice.Domain.ValueObjects;
-
-public class OrderDetails : IValueObject<OrderDetails>
+namespace Order.Domain
 {
-    private readonly string _Value;
-
-    public OrderDetails(string value)
+    public class OrderDetails : IValueObject<OrderDetails>
     {
-        if (value.Length < 8)
+        private readonly string _value;
+
+        public OrderDetails(string value)
         {
-            throw new InvalidOrderDetailsException();
+            if (value.Length < 8)
+            {
+                throw new InvalidOrderDetailsException();
+            }
+
+            _value = value;
         }
-        
-        _Value = value;
+
+        public string GetValue() => _value;
+        public bool Equals(OrderDetails other) => _value == other._value;
     }
-    
-    public string GetValue() => _Value;
-
-    public bool Equals(OrderDetails other) => _Value == other._Value;
-
 }

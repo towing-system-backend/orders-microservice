@@ -1,22 +1,28 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.Exceptions;
 
-namespace orders_microservice.Domain.ValueObjects;
-
-public class OrderStatus : IValueObject<OrderStatus>
+namespace Order.Domain
 {
-    private readonly string _Value;
-
-    public OrderStatus(String value)
+    public class OrderStatus : IValueObject<OrderStatus>
     {
-        if(value is not string)
-        {
-            throw new InvalidOrderStatusException();
-        }
-        _Value = value;
-    }
-    
-    public string GetValue() => _Value;
+        private readonly string _value;
+        private static readonly string[] ValidStatuses = { "Active", "Inactive" };
 
-    public bool Equals(OrderStatus other) => _Value == other._Value;
+        public OrderStatus(string value)
+        {
+            if (!IsValidStatus(value))
+            {
+                throw new InvalidOrderStatusException();
+            }
+
+            _value = value;
+        }
+
+        private static bool IsValidStatus(string value)
+        {
+            return Array.Exists(ValidStatuses, status => status.Equals(value, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public string GetValue() => _value;
+        public bool Equals(OrderStatus other) => _value == other._value;
+    }
 }

@@ -2,36 +2,28 @@ using Application.Core;
 using DotNetEnv;
 using MassTransit;
 using Microsoft.IdentityModel.Tokens;
-using orders_microservice.Domain.Repositories;
-using orders_microservice.Infrastructure.Repositories;
 using System.Text;
-using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService;
-using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.States;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
-using orders_microservice.Utils.Core.Src.Application.LocationService;
-using orders_microservice.Utils.Core.Src.Infrastructure.GoogleMapService;
+using Order.Domain;
 using System.Text.Json.Nodes;
-using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
-using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Repositories;
-using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Models;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using orders_microservice.Utils.Core.Src.Application.NotificationService;
 using orders_microservice.Utils.Core.Src.Infrastructure.FireBaseNotificationsService;
+using Order.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
 FirebaseApp.Create(new AppOptions()
 {
-    Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("FIREBASE-SERVICES")),
-    if (!credential.IsServiceAccount) throw new Exception("Las credenciales no son de una cuenta de servicio")
+    Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("FIREBASE-SERVICES"))
 });
 
 
-builder.Services.AddHttpClient();
+//builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
 builder.Services.AddSingleton<INotificationService, FirebaseNotificationsService>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
@@ -40,13 +32,20 @@ builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
 builder.Services.AddScoped<IMessageBrokerService, RabbitMQService>();
 builder.Services.AddScoped<ILocationService<JsonNode>, GoogleMapService>();
 builder.Services.AddScoped<ISagaStateMachineService<string>, SagaStateMachineRepository>();
+builder.Services.AddScoped<Logger, DotNetLogger>();
+builder.Services.AddScoped<IPerformanceLogsRepository, MongoPerformanceLogsRespository>();
 builder.Services.AddControllers(options => {
     options.Filters.Add<GlobalExceptionFilter>();
 });
 
-//var certSection = builder.Configuration.GetSection("Kestrel:Endpoints:Https:Certificate");
-//certSection["Path"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Path")!;
-//certSection["Password"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Password")!;
+var certSection = builder.Configuration.GetSection("Kestrel:Endpoints:Https:Certificate");
+certSection["Path"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Path")!;
+certSection["Password"] = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel_CertificatesDefault_Password")!;
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Order API", Version = "v1" });
+});
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -63,7 +62,7 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-
+builder.Services.AddControllers();
 
 builder.Services.AddMassTransit(busConfigurator =>
 {
@@ -104,19 +103,6 @@ builder.Services.AddMassTransit(busConfigurator =>
     });
 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "Order API", Version = "v1" });
-});
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000); 
-});
-
-builder.Services.AddControllers();
-
-
 var app = builder.Build();
 
 
@@ -125,7 +111,8 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
 app.UseSwagger(c =>
@@ -145,4 +132,4 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+ app.Run();

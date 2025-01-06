@@ -1,4 +1,4 @@
-﻿namespace orders_microservice.Src.Application.Commands.AssignTowDriver.Types
+﻿namespace Order.Application
 {
     public record AssignTowDriverResponse
     (

@@ -1,11 +1,8 @@
-﻿using orders_microservice.Domain.ValueObjects;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects;
-using orders_microservice.Utils.Core.Src.Domain.Events;
+﻿using Application.Core;
 
-namespace orders_microservice.Src.Domain.Events
+namespace Order.Domain
 {
-    public class AdditionalCostRemovedEvent(string pusblisherId, string type, AdditionalCostRemoved context) 
-        : DomainEvent(pusblisherId, type, context) { }
+    public class AdditionalCostRemovedEvent(string pusblisherId, string type, AdditionalCostRemoved context) : DomainEvent(pusblisherId, type, context) { }
 
     public class AdditionalCostRemoved(string Id)
     {

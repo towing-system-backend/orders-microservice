@@ -1,6 +1,4 @@
 using System.Reflection;
-using orders_microservice.Utils.Core.Src.Domain.Entities;
-using orders_microservice.Utils.Core.Src.Domain.Events;
 
 namespace Application.Core
 {

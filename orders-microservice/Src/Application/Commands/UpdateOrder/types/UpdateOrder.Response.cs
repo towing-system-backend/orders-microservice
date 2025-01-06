@@ -1,5 +1,4 @@
-﻿namespace orders_microservice.Application.Commands.UpdateOrder.types;
-
-public record UpdateOrderResponse(
-    string Id
-);
+﻿namespace Order.Application
+{
+    public record UpdateOrderResponse(string Id);
+}

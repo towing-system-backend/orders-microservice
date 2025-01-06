@@ -1,24 +1,22 @@
 ﻿using Application.Core;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects
+namespace Order.Domain
 {
     public class AdditionalCostAmount : IValueObject<AdditionalCostAmount>
     {
-        private readonly decimal _Value;
+        private readonly decimal _value;
 
         public AdditionalCostAmount(decimal value)
         {
-            if(value < 0)
+            if (value < 0)
             {
                 throw new InvalidAdditionalCostAmountException();
             }
 
-            _Value = value;
+            _value = value;
         }
 
-        public decimal GetValue() => _Value;
-
-        public bool Equals(AdditionalCostAmount other) => _Value == other._Value;
+        public decimal GetValue() => _value;
+        public bool Equals(AdditionalCostAmount other) => _value == other._value;
     }
 }

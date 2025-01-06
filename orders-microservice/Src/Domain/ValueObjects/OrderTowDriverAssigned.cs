@@ -1,24 +1,22 @@
 ﻿using Application.Core;
-using orders_microservice.Domain.Exceptions;
 
-namespace orders_microservice.Domain.ValueObjects;
-
-public class OrderTowDriverAssigned : IValueObject<OrderTowDriverAssigned>
+namespace Order.Domain
 {
-    private readonly string? _Value;
-
-    public OrderTowDriverAssigned(string? value)
+    public class OrderTowDriverAssigned : IValueObject<OrderTowDriverAssigned>
     {
-        if (value is null && !GuidEx.IsGuid(value))
+        private readonly string? _value;
+
+        public OrderTowDriverAssigned(string? value)
         {
-            throw new InvalidTowDriverAssignedException();
+            if (value is null && !GuidEx.IsGuid(value))
+            {
+                throw new InvalidTowDriverAssignedException();
+            }
+
+            _value = value;
         }
 
-        _Value = value;
+        public string GetValue() => _value;
+        public bool Equals(OrderTowDriverAssigned other) => _value == other._value;
     }
-    
-    public string GetValue() => _Value;
-
-    public bool Equals(OrderTowDriverAssigned other) => _Value == other._Value;
-
 }

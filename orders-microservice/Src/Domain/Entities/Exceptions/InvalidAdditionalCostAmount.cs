@@ -1,10 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions
+namespace Order.Domain
 {
     public class InvalidAdditionalCostAmountException : DomainException
     {
-        public InvalidAdditionalCostAmountException() : base("Invalid additional cost amount, It must be positive") { }
-       
+        public InvalidAdditionalCostAmountException() : base("Invalid additional cost amount, It must be positive.") { }
     }
 }

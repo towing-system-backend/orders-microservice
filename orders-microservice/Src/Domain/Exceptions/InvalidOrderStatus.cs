@@ -1,8 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Domain.Exceptions;
-
-public class InvalidOrderStatusException : DomainException
+namespace Order.Domain
 {
-    public InvalidOrderStatusException() : base("Invalid order status"){}
+    public class InvalidOrderStatusException : DomainException
+    {
+        public InvalidOrderStatusException() : base("Invalid order status.") { }
+    }
 }

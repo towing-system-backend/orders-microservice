@@ -1,9 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Src.Application.Errors
+namespace Order.Application
 {
     public class OrderRejectedByDriverError : ApplicationError
     {
-        public OrderRejectedByDriverError() : base("Order was rejected by driver") { }
+        public OrderRejectedByDriverError() : base("Order was rejected by driver.") { }
     }
 }

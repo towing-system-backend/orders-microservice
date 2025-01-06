@@ -1,11 +1,7 @@
 ﻿using Application.Core;
-using orders_microservice.Application.Errors;
-using orders_microservice.Domain.Repositories;
-using orders_microservice.Src.Application.Commands.RemoveAdditionalCost.Types;
-using orders_microservice.Src.Application.Errors;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects;
+using Order.Domain;
 
-namespace orders_microservice.Src.Application.Commands.RemoveAdditionalCost
+namespace Order.Application
 {
     public class RemoveAdditionalCostCommandHandler
     (
@@ -25,7 +21,7 @@ namespace orders_microservice.Src.Application.Commands.RemoveAdditionalCost
             if (!orderRegistered.HasValue()) return Result<RemoveAdditionalCostResponse>.MakeError(new OrderNotFoundError());
             var order = orderRegistered.Unwrap();
 
-            if (!order.GetAdditionalCosts.Any(x => x.GetAdditionalCostId.GetValue() == command.AdditionalCostId))
+            if (!order.GetAdditionalCosts().Any(x => x.GetAdditionalCostId().GetValue() == command.AdditionalCostId))
                 return Result<RemoveAdditionalCostResponse>.MakeError(new AdditionalCostNotFoundError());
             
             order.RemoveAdditionalCost(new AdditionalCostId(command.AdditionalCostId));

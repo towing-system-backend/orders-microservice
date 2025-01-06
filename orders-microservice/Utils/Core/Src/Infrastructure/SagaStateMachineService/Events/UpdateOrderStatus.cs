@@ -1,12 +1,13 @@
-﻿namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events;
-
-public class UpdateOrderStatusEvent
+﻿namespace Application.Core
 {
-    public Guid OrderId { get; }
-    public DateTime? UpdatedAt { get; set; }
-
-    public UpdateOrderStatusEvent(Guid orderId) 
+    public class UpdateOrderStatusEvent
     {
-        OrderId = orderId;
+        public Guid OrderId { get; }
+        public DateTime? UpdatedAt { get; set; }
+
+        public UpdateOrderStatusEvent(Guid orderId)
+        {
+            OrderId = orderId;
+        }
     }
 }

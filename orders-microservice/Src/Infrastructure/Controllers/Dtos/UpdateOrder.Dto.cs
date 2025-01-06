@@ -1,34 +1,34 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace orders_microservice.Infrastructure.Controllers.Dtos;
-
-public record UpdateOrderDto
+namespace Order.Infrastructure
 {
-    
-    [Required] [StringLength(128, MinimumLength = 4)]
-    public string Id;
+    public record AdditionalCostDto
+    (
+        [Required][StringLength(64, MinimumLength = 4)]
+        string Name,
 
-    [StringLength(64, MinimumLength = 4)]
-    public string? Status;
-    
-    [StringLength(128, MinimumLength = 4)]
-    public string? TowDriverAssigned;
-    
-    [StringLength(512, MinimumLength = 4)]
-    public string? Destination;
+        [Required][StringLength(64, MinimumLength = 4)]
+        string Category,
 
-    public List<AdditionalCostDto> AdditionalCosts = new List<AdditionalCostDto>();
+        [Range(0.01, double.MaxValue)]
+        decimal? Amount
+    );
 
-}
+    public record UpdateOrderDto
+    (
 
-public record AdditionalCostDto
-{
-    [Required][StringLength(64, MinimumLength = 4)]
-    public string Name;
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string Id,
 
-    [Required][StringLength(64, MinimumLength = 4)]
-    public string Category;
+        [RegularExpression(@"^(Active|Inactive)$", ErrorMessage = "Status must be 'Active', or 'Inactive'.")]
+        string? Status,
 
-    [Range(0.01, double.MaxValue)]
-    public decimal? Amount;
+        [RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string? TowDriverAssigned,
+
+        [StringLength(512, MinimumLength = 4)]
+        string? Destination,
+
+        List<AdditionalCostDto> AdditionalCosts
+    );
 }

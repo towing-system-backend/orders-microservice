@@ -484,7 +484,7 @@ $RECYCLE.BIN/
 *.swp
 
 # Excluir el archivo JSON específico
-google-credentials/gruasucab-613da-firebase-adminsdk-7ao30-2b952c7a6c.json
+./google-credentials/gruasucab-613da-firebase-adminsdk-7ao30-2b952c7a6c.json
 
 # Excluir todos los archivos JSON dentro de la carpeta google-credentials (opcional)
 google-credentials/*.json
