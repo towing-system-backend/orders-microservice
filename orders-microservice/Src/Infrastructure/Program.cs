@@ -16,12 +16,24 @@ using System.Text.Json.Nodes;
 using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
 using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Repositories;
 using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Models;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using orders_microservice.Utils.Core.Src.Application.NotificationService;
+using orders_microservice.Utils.Core.Src.Infrastructure.FireBaseNotificationsService;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("FIREBASE-SERVICES")),
+    if (!credential.IsServiceAccount) throw new Exception("Las credenciales no son de una cuenta de servicio")
+});
+
+
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
+builder.Services.AddSingleton<INotificationService, FirebaseNotificationsService>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
 builder.Services.AddScoped<IdService<string>, GuidGenerator>();
 builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
@@ -104,7 +116,9 @@ builder.WebHost.ConfigureKestrel(options =>
 
 builder.Services.AddControllers();
 
+
 var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment())
 {
