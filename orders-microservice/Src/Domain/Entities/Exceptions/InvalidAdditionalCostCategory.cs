@@ -1,11 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions
+namespace Order.Domain
 {
     public class InvalidAdditionalCostCategoryException : DomainException
     {
-        public InvalidAdditionalCostCategoryException() : base("Invalid additional cost category, It must not be empty")
-        {
-        }
+        public InvalidAdditionalCostCategoryException() : base("Invalid additional cost category, It must not be empty.") { }
     }
 }

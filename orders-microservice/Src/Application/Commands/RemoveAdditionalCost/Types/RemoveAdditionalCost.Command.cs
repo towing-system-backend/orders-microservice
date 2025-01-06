@@ -1,7 +1,6 @@
-﻿namespace orders_microservice.Src.Application.Commands.RemoveAdditionalCost.Types
+﻿namespace Order.Application
 {
-    public record RemoveAdditionalCostCommand
-    (
+    public record RemoveAdditionalCostCommand(
         string OrderId,
         string AdditionalCostId
     );

@@ -1,10 +1,6 @@
 ﻿using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
-using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
-using orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Models;
 
-
-namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Repositories
+namespace Application.Core
 {
     public class SagaStateMachineRepository : ISagaStateMachineService<String>
     {
@@ -24,5 +20,4 @@ namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineServ
             return sagaState.DriversThatRejected ?? new List<string>();
         }
     }
-
 }

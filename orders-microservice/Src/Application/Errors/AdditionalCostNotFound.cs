@@ -1,10 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Src.Application.Errors
+namespace Order.Application
 {
     public class AdditionalCostNotFoundError : ApplicationError
     {
         public AdditionalCostNotFoundError() : base("Additional cost not found.") { }
-
     }   
 }

@@ -1,4 +1,4 @@
-﻿namespace orders_microservice.Src.Application.Commands.AssignTowDriver.Types
+﻿namespace Order.Application
 {
-    public record AssignTowDriverCommand(string OrderId, Dictionary<string, string> towsLocation);
+    public record AssignTowDriverCommand(string OrderId, Dictionary<string, string> TowsLocation);
 }

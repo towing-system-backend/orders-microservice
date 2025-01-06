@@ -1,4 +1,4 @@
-﻿namespace orders_microservice.Utils.Core.Src.Utils
+﻿namespace Application.Core
 {
     public static class UrlRegex
     {

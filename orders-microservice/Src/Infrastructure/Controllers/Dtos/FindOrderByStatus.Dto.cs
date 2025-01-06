@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace orders_microservice.Infrastructure.Controllers.Dtos;
-
-public record FindOrderByStatusDto
+namespace Order.Infrastructure
 {
-    [Required] [StringLength(64, MinimumLength = 4)]
-    public string Status;
+    public record FindOrderByStatusDto
+    (
+        [Required][RegularExpression(@"^(Active|Inactive)$", ErrorMessage = "Status must be 'Active', or 'Inactive'.")]
+        string Status
+    );
 }

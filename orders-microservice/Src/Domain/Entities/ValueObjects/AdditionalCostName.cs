@@ -1,23 +1,21 @@
 ﻿using Application.Core;
-using orders_microservice.Src.Domain.Entities.AdditionalCost.Exceptions;
 
-namespace orders_microservice.Src.Domain.Entities.AdditionalCost.ValueObjects
+namespace Order.Domain
 {
     public class AdditionalCostName : IValueObject<AdditionalCostName>
     {
-        public string _Value { get; }
+        private readonly string _value;
 
         public AdditionalCostName(string value)
         {
-            if(string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 throw new InvalidAdditionalCostNameException();
             }
-            _Value = value;
+            _value = value;
         }
 
-        public string GetValue() => _Value;
-
-        public bool Equals(AdditionalCostName other) => _Value == other._Value;
+        public string GetValue() => _value;
+        public bool Equals(AdditionalCostName other) => _value == other._value;
     }
 }

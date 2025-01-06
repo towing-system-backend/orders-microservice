@@ -1,6 +1,5 @@
 ﻿using MassTransit;
 using Newtonsoft.Json;
-using orders_microservice.Utils.Core.Src.Domain.Events;
 using RabbitMQ.Contracts;
 
 namespace Application.Core

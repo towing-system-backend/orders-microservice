@@ -1,12 +1,13 @@
-﻿namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events;
-
-public class OrderCancelledEvent
+﻿namespace Application.Core
 {
-    public Guid OrderId { get; }
-    public DateTime CancelledAt { get; set; }
-
-    public OrderCancelledEvent(Guid orderId)
+    public class OrderCancelledEvent
     {
-        OrderId = orderId;
+        public Guid OrderId { get; }
+        public DateTime CancelledAt { get; set; }
+
+        public OrderCancelledEvent(Guid orderId)
+        {
+            OrderId = orderId;
+        }
     }
 }

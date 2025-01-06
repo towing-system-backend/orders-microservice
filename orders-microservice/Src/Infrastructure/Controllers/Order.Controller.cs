@@ -1,47 +1,35 @@
 ﻿using Application.Core;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
-using order.Infrastructure.Responses;
-using orders_microservice.Application.Commands.RegisterOrder;
-using orders_microservice.Application.Commands.RegisterOrder.types;
-using orders_microservice.Application.Commands.UpdateOrder;
-using orders_microservice.Application.Commands.UpdateOrder.types;
-using orders_microservice.Application.Commands.UpdateOrderStatus;
-using orders_microservice.Domain.Repositories;
-using orders_microservice.Infrastructure.Controllers.Dtos;
-using orders_microservice.Infrastructure.queries;
-using orders_microservice.Src.Application.Commands.AssignTowDriver;
-using orders_microservice.Src.Application.Commands.AssignTowDriver.Types;
-using orders_microservice.Utils.Core.Src.Application.LocationService;
-using orders_microservice.Utils.Core.Src.Application.SagaStateMachineService;
 using System.Text.Json.Nodes;
-using orders_microservice.Src.Application.Commands.RemoveAdditionalCost;
-using orders_microservice.Src.Application.Commands.RemoveAdditionalCost.Types;
-using orders_microservice.Src.Infrastructure.Controllers.Dtos;
+using Order.Domain;
+using Order.Application; 
 
-
-namespace orders_microservice.Infrastructure.Controllers
+namespace Order.Infrastructure
 {
     [ApiController]
     [Route("api/order")]
     public class OrderController(
         IdService<string> idService,
+        Logger logger,
         IMessageBrokerService messageBrokerService,
         IEventStore eventStore,
         IOrderRepository orderRepository,
         IPublishEndpoint publishEndpoint,
         ILocationService<JsonNode> locationService,
-        ISagaStateMachineService<string> sagaStateMachineService
-    )
-        : ControllerBase
+        ISagaStateMachineService<string> sagaStateMachineService,
+        IPerformanceLogsRepository performanceLogsRepository
+    ) : ControllerBase
     {
         private readonly IdService<string> _idService = idService;
+        private readonly Logger _logger = logger;
         private readonly IEventStore _eventStore = eventStore;
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly ILocationService<JsonNode> _locationService = locationService;
         private readonly ISagaStateMachineService<string> _sagaStateMachineService = sagaStateMachineService;
+        private readonly IPerformanceLogsRepository _performanceLogsRepository = performanceLogsRepository;
 
         [HttpPost("create")]
         public async Task<ObjectResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)
@@ -57,19 +45,23 @@ namespace orders_microservice.Infrastructure.Controllers
                 createOrderDto.PhoneNumber
 
             );
+
             var handler =
                 new ExceptionCatcher<RegisterOrderCommand, RegisterOrderResponse>(
                     new PerfomanceMonitor<RegisterOrderCommand, RegisterOrderResponse>(
-                        new RegisterOrderCommandHandler(
-                            _idService,
-                            _messageBrokerService,
-                            _eventStore,
-                            _orderRepository,
-                            _publishEndpoint
-                        )
+                        new LoggingAspect<RegisterOrderCommand, RegisterOrderResponse>(
+                            new RegisterOrderCommandHandler(
+                                _idService,
+                                _messageBrokerService,
+                                _eventStore,
+                                _orderRepository,
+                                _publishEndpoint
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(RegisterOrderCommandHandler), "Write"
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
+            
             return Ok(res.Unwrap());
         }
 
@@ -89,19 +81,24 @@ namespace orders_microservice.Infrastructure.Controllers
                     )
                 ).ToList()
             );
+
             var handler =
                 new ExceptionCatcher<UpdateOrderCommand, UpdateOrderResponse>(
                     new PerfomanceMonitor<UpdateOrderCommand, UpdateOrderResponse>(
-                        new UpdateOrderCommandHandler(
-                            _idService,
-                            _eventStore,
-                            _orderRepository,
-                            _messageBrokerService,
-                            _publishEndpoint
-                        )
+                        new LoggingAspect<UpdateOrderCommand, UpdateOrderResponse>(
+                            new UpdateOrderCommandHandler(
+                                _idService,
+                                _eventStore,
+                                _orderRepository,
+                                _messageBrokerService,
+                                _publishEndpoint
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(UpdateOrderCommandHandler), "Write"
+
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
+            
             return Ok(res.Unwrap());
         }
 
@@ -112,49 +109,61 @@ namespace orders_microservice.Infrastructure.Controllers
                 updateOrderStatusDto.Id,
                 updateOrderStatusDto.Status
             );
+
             var handler =
                 new ExceptionCatcher<UpdateOrderStatusCommand, UpdateOrderStatusResponse>(
                     new PerfomanceMonitor<UpdateOrderStatusCommand, UpdateOrderStatusResponse>(
-                        new UpdateOrderStatusCommandHandler(
-                            _eventStore,
-                            _orderRepository,
-                            _messageBrokerService,
-                            _publishEndpoint
-                        )
+                        new LoggingAspect<UpdateOrderStatusCommand, UpdateOrderStatusResponse>(
+                            new UpdateOrderStatusCommandHandler(
+                                _eventStore,
+                                _orderRepository,
+                                _messageBrokerService,
+                                _publishEndpoint
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(UpdateOrderStatusCommandHandler), "Write"
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
+
             return Ok(res.Unwrap());
         }
 
         [HttpPatch("assign/tow")]
         public async Task<ObjectResult> AssignTowDriver([FromBody] AssignTowDriverDto assignTowDriverDto)
         {
+
+            var query = new FindTowDriverByStatusQuery();
+            var towDrivers = await query.Execute();
+
             var command = new AssignTowDriverCommand(
                 assignTowDriverDto.OrderId,
-                assignTowDriverDto.TowsLocation
+                towDrivers.Unwrap()
             );
+
             var handler =
                 new ExceptionCatcher<AssignTowDriverCommand, AssignTowDriverResponse>(
                     new PerfomanceMonitor<AssignTowDriverCommand, AssignTowDriverResponse>(
-                        new AssignTowDriverCommandHandler(
-                            _eventStore,
-                            _orderRepository,
-                            _publishEndpoint,
-                            _messageBrokerService,
-                            _locationService,
-                            _sagaStateMachineService
-                        )
+                        new LoggingAspect<AssignTowDriverCommand, AssignTowDriverResponse>(
+                            new AssignTowDriverCommandHandler(
+                                _eventStore,
+                                _orderRepository,
+                                _publishEndpoint,
+                                _messageBrokerService,
+                                _locationService,
+                                _sagaStateMachineService
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
-            return Ok(res.Unwrap());
+
+             return Ok(res.Unwrap()); 
         }
 
         [HttpGet("find/status/{status}")]
         public async Task<ObjectResult> FindOrderByStatus(string status)
         {
-            var data = new FindOrderByStatusDto { Status = status };
+            var data = new FindOrderByStatusDto(status);
             var query = new FindOrderByStatusQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
@@ -163,7 +172,7 @@ namespace orders_microservice.Infrastructure.Controllers
         [HttpGet("find/{id}")]
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
-            var data = new FindOrderAssignedDto { Id = id };
+            var data = new FindOrderAssignedDto(id);
             var query = new FindOrderAssignedQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
@@ -177,17 +186,21 @@ namespace orders_microservice.Infrastructure.Controllers
                 removeAdditionalCostDto.OrderId,
                 removeAdditionalCostDto.AdditionalCostId
             );
+
             var handler =
                 new ExceptionCatcher<RemoveAdditionalCostCommand, RemoveAdditionalCostResponse>(
                     new PerfomanceMonitor<RemoveAdditionalCostCommand, RemoveAdditionalCostResponse>(
-                        new RemoveAdditionalCostCommandHandler(
-                            _eventStore,
-                            _orderRepository,
-                            _messageBrokerService
-                        )
+                        new LoggingAspect<RemoveAdditionalCostCommand, RemoveAdditionalCostResponse>(
+                            new RemoveAdditionalCostCommandHandler(
+                                _eventStore,
+                                _orderRepository,
+                                _messageBrokerService
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(RemoveAdditionalCostCommandHandler), "Write"
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
+            
             return Ok(res.Unwrap());
         }
     }

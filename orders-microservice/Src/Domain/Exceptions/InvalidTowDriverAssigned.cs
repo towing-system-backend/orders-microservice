@@ -1,8 +1,9 @@
 ﻿using Application.Core;
 
-namespace orders_microservice.Domain.Exceptions;
-
-public class InvalidTowDriverAssignedException : DomainException
+namespace Order.Domain
 {
-    public InvalidTowDriverAssignedException() : base("Invalid TowDriver Assigned"){}
+    public class InvalidTowDriverAssignedException : DomainException
+    {
+        public InvalidTowDriverAssignedException() : base("Invalid TowDriver Assigned.") { }
+    }
 }

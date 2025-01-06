@@ -1,14 +1,12 @@
-﻿namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Events;
-
-public class OrderCreatedEvent
+﻿namespace Application.Core
 {
-    public Guid OrderId { get; }
-    public DateTime? CreatedAt { get; set; }
-    public OrderCreatedEvent(Guid orderId)
+    public class OrderCreatedEventt
     {
-        OrderId = orderId;
+        public Guid OrderId { get; }
+        public DateTime? CreatedAt { get; set; }
+        public OrderCreatedEventt(Guid orderId)
+        {
+            OrderId = orderId;
+        }
     }
 }
-
-
-

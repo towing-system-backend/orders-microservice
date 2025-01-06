@@ -1,7 +1,6 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace orders_microservice.Utils.Core.Src.Infrastructure.SagaStateMachineService.Models
+namespace Application.Core
 {
     public class MongoStates
     (
