@@ -7,6 +7,6 @@
         double Longitude,
         double Distance,
         string Address,
-        string EstimatedTimeOfArrival
+        string? EstimatedTimeOfArrival
     );
 }

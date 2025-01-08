@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderClientInformationPolicyException : DomainException
-    {
-        public InvalidOrderClientInformationPolicyException() : base("Invalid client policy id.") { }
-    }
+    public class InvalidOrderClientInformationPolicyException() : DomainException("Invalid client policy id.");
 }

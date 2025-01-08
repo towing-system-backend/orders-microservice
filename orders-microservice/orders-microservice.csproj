@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Test\" />
     <Folder Include="google-credentials\" />
-    <Folder Include="Utils\Core\Src\Infrastructure\RabbitMQService\Utils\" />
   </ItemGroup>
 
 </Project>

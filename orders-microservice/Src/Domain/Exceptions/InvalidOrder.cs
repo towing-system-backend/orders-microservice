@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderException : DomainException
-    {
-        public InvalidOrderException() : base("Invalid order, one or more value object are null") { }
-    }
+    public class InvalidOrderException() : DomainException("Invalid order, one or more value object are null");
 }

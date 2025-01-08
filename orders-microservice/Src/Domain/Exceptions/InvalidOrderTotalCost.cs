@@ -2,8 +2,6 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderTotalCostException : DomainException
-    {
-        public InvalidOrderTotalCostException() : base("Invalid order total cost, it must be a positive number.") { }
-    }
+    public class InvalidOrderTotalCostException()
+        : DomainException("Invalid order total cost, it must be a positive number.");
 }

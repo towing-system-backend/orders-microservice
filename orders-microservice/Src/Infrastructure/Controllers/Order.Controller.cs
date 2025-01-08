@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Order.Domain;
 using Order.Application; 
 using orders_microservice.Utils.Core.Src.Application.NotificationService;
+using orders_microservice.Src.Infrastructure.Queries.TowDrivers;
 
 
 namespace Order.Infrastructure
@@ -42,12 +43,13 @@ namespace Order.Infrastructure
                 createOrderDto.Status,
                 createOrderDto.IssueLocation,
                 createOrderDto.Destination,
+                createOrderDto.Issuer,
                 createOrderDto.Details,
                 createOrderDto.Name,
                 createOrderDto.Image,
                 createOrderDto.Policy,
-                createOrderDto.PhoneNumber
-
+                createOrderDto.PhoneNumber,
+                createOrderDto.IdentificationNumber
             );
 
             var handler =
@@ -81,7 +83,7 @@ namespace Order.Infrastructure
                     x => new AdditionalCostCommand(
                         x.Name,
                         x.Category,
-                        x.Amount.Value 
+                        x.Amount!.Value 
                     )
                 ).ToList()
             );
@@ -177,7 +179,7 @@ namespace Order.Infrastructure
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
             var data = new FindOrderAssignedDto(id);
-            var query = new FindOrderAssignedQuery();
+            var query = new FindOrderByIdQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
@@ -208,7 +210,7 @@ namespace Order.Infrastructure
             return Ok(res.Unwrap());
         }
 
-        [HttpPost("send-notification")]
+        [HttpPost("send/notification")]
         public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
         {
             try

@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderStatusException : DomainException
-    {
-        public InvalidOrderStatusException() : base("Invalid order status.") { }
-    }
+    public class InvalidOrderStatusException() : DomainException("Invalid order status.");
 }

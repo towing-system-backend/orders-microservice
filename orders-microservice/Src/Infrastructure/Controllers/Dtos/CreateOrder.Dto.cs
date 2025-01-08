@@ -4,7 +4,7 @@ namespace Order.Infrastructure
 {
     public record CreateOrderDto
     (
-        [Required][StringLength(64, MinimumLength = 4)]
+        [Required][RegularExpression(@"^(ToAssign|ToAccept|Accepted|Located|InProgress|Completed|Cancelled|Paid)$", ErrorMessage = "Status is not valid.")]
         string Status,
 
         [Required][StringLength(512, MinimumLength = 8)]
@@ -12,6 +12,9 @@ namespace Order.Infrastructure
 
         [Required][StringLength(512, MinimumLength = 4)]
         string Destination,
+        
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string Issuer,
 
         [Required][StringLength(512, MinimumLength = 4)]
         string Details,
@@ -22,10 +25,13 @@ namespace Order.Infrastructure
         [Required][StringLength(2048, MinimumLength = 8)]
         string Image,
 
-        [Required][StringLength(128, MinimumLength = 32)]
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
         string Policy,
 
         [Required][StringLength(64, MinimumLength = 8)]
-        string PhoneNumber
+        string PhoneNumber,
+        
+        [Required][Range(999999, 100000000)]
+        int IdentificationNumber
     );
 }

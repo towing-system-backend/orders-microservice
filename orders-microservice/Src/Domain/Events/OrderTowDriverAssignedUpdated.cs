@@ -14,7 +14,7 @@ namespace Order.Domain
                 publisherId.GetValue(),
                 typeof(OrderTowDriverAssignedUpdated).Name,
                 new OrderTowDriverAssignedUpdated(
-                    towDriverAssigned.GetValue()
+                    towDriverAssigned.GetValue()!
                 )
             );
         }

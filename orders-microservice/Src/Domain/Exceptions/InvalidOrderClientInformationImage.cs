@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderClientInformationImageException : DomainException
-    {
-        public InvalidOrderClientInformationImageException() : base("Invalid client image url.") { }
-    }
+    public class InvalidOrderClientInformationImageException() : DomainException("Invalid client image url.");
 }

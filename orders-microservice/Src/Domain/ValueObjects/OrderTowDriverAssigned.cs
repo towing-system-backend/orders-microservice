@@ -8,7 +8,7 @@ namespace Order.Domain
 
         public OrderTowDriverAssigned(string? value)
         {
-            if (value is null && !GuidEx.IsGuid(value))
+            if (value is null && !GuidEx.IsGuid(value!))
             {
                 throw new InvalidTowDriverAssignedException();
             }
@@ -16,7 +16,7 @@ namespace Order.Domain
             _value = value;
         }
 
-        public string GetValue() => _value;
+        public string? GetValue() => _value;
         public bool Equals(OrderTowDriverAssigned other) => _value == other._value;
     }
 }

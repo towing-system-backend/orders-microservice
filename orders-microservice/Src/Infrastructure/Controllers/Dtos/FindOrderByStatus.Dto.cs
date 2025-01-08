@@ -4,7 +4,7 @@ namespace Order.Infrastructure
 {
     public record FindOrderByStatusDto
     (
-        [Required][RegularExpression(@"^(Active|Inactive)$", ErrorMessage = "Status must be 'Active', or 'Inactive'.")]
+        [Required][RegularExpression(@"^(ToaAssign|ToAccept|Accepted|Located|InProgress|Completed|Cancelled|Paid)$", ErrorMessage = "Status is not valid.")]
         string Status
     );
 }

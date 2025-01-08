@@ -30,7 +30,7 @@ namespace Order.Infrastructure
                     order.PolicyId,
                     order.PhoneNumber,
                     order.TotalCost,
-                    order.AdditionalCosts.Select(cost => new AdditonalCostResponse
+                    order.AdditionalCosts!.Select(cost => new AdditonalCostResponse
                     (
                         cost.AdditionalCostId,
                         cost.Name,

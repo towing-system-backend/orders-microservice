@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderClientInformationPhoneNumberException : DomainException
-    {
-        public InvalidOrderClientInformationPhoneNumberException() : base("Invalid client phone number.") { }
-    }
+    public class InvalidOrderClientInformationPhoneNumberException() : DomainException("Invalid client phone number.");
 }
