@@ -41,6 +41,6 @@ namespace Order.Domain
         public string GetClientImage() => _image;
         public string GetClientPolicyId() => _policyId;
         public string GetClientPhoneNumber() => _phoneNumber;
-        public bool Equals(OrderClientInformation other) => _policyId == other._policyId;
+        public bool Equals(OrderClientInformation other) =>  _name == other._name && _image == other._image && _policyId == other._policyId && _phoneNumber == other._phoneNumber;
     }
 }

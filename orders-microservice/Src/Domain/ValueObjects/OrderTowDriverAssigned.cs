@@ -4,16 +4,21 @@ namespace Order.Domain
 {
     public class OrderTowDriverAssigned : IValueObject<OrderTowDriverAssigned>
     {
-        private readonly string? _value;
+        private readonly string _value;
 
-        public OrderTowDriverAssigned(string? value)
+        public OrderTowDriverAssigned(string value)
         {
-            if (value is null && !GuidEx.IsGuid(value))
+            if (value.Equals("Not Assigned.")  || !GuidEx.IsGuid(value))
+            { 
+                _value = value; 
+            } 
+            else if (GuidEx.IsGuid(value))
+            {
+                _value = value;
+            } else 
             {
                 throw new InvalidTowDriverAssignedException();
             }
-
-            _value = value;
         }
 
         public string GetValue() => _value;

@@ -17,13 +17,12 @@ namespace Order.Infrastructure
 
         public async Task Save(Domain.Order order)
         {
-            Console.WriteLine($"{order.GetAdditionalCosts}");
             var filter = Builders<MongoOrder>.Filter.Eq(order => order.OrderId, order.GetOrderId().GetValue());
             var update = Builders<MongoOrder>.Update
                 .Set(order => order.Status, order.GetOrderStatus().GetValue())
                 .Set(order => order.IssueLocation, order.GetOrderIssueLocation().GetValue())
                 .Set(order => order.Destination, order.GetOrderDestinationLocation().GetValue())
-                .Set(order => order.TowDriverAssigned, order.GetOrderTowDriverAssigned()?.GetValue() ?? "Not assigned")
+                .Set(order => order.TowDriverAssigned, order.GetOrderTowDriverAssigned().GetValue())
                 .Set(order => order.Details, order.GetOrderDetails().GetValue())
                 .Set(order => order.Name, order.GetOrderClientInformation().GetClientName())
                 .Set(order => order.Image, order.GetOrderClientInformation().GetClientImage())

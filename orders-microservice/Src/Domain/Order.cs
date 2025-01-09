@@ -8,7 +8,7 @@ namespace Order.Domain
         private OrderStatus Status;
         private OrderIssueLocation IssueLocation;
         private OrderDestinationLocation DestinationLocation;
-        private OrderTowDriverAssigned? TowDriverAssigned;
+        private OrderTowDriverAssigned TowDriverAssigned;
         private OrderDetails Details;
         private OrderClientInformation ClientInformation;
         private List<AdditionalCost>? AdditionalCosts;
@@ -38,7 +38,7 @@ namespace Order.Domain
         public OrderIssueLocation GetOrderIssueLocation() => IssueLocation;
         public OrderDestinationLocation GetOrderDestinationLocation() => DestinationLocation;
         public OrderDetails GetOrderDetails() => Details;
-        public OrderTowDriverAssigned GetOrderTowDriverAssigned() => TowDriverAssigned!;
+        public OrderTowDriverAssigned GetOrderTowDriverAssigned() => TowDriverAssigned;
         public OrderClientInformation GetOrderClientInformation() => ClientInformation;
         public List<AdditionalCost>? GetAdditionalCosts() => AdditionalCosts;
         public OrderTotalCost GetOrderTotalCost() => TotalCost;
@@ -48,7 +48,7 @@ namespace Order.Domain
             OrderStatus status,
             OrderIssueLocation issueLocation,
             OrderDestinationLocation destinationLocation,
-            OrderTowDriverAssigned todriverAssigned,
+            OrderTowDriverAssigned towdriverAssigned,
             OrderDetails details,
             OrderClientInformation clientInformation,
             OrderTotalCost totalCost,
@@ -64,7 +64,7 @@ namespace Order.Domain
                     Status = status,
                     IssueLocation = issueLocation,
                     DestinationLocation = destinationLocation,
-                    TowDriverAssigned = todriverAssigned,
+                    TowDriverAssigned = towdriverAssigned,
                     Details = details,
                     ClientInformation = clientInformation,
                     TotalCost = totalCost,
@@ -79,6 +79,7 @@ namespace Order.Domain
                     status,
                     issueLocation,
                     destinationLocation,
+                    towdriverAssigned,
                     details,
                     clientInformation,
                     totalCost,
@@ -109,6 +110,7 @@ namespace Order.Domain
             Status = new OrderStatus(context.Status);
             IssueLocation = new OrderIssueLocation(context.IssueLocation);
             DestinationLocation = new OrderDestinationLocation(context.Destination);
+            TowDriverAssigned = new OrderTowDriverAssigned(context.TowDriverAssigned);
             Details = new OrderDetails(context.Details);
             ClientInformation = new OrderClientInformation(context.Name, context.Image, context.PolicyId, context.PhoneNumber);
             TotalCost = new OrderTotalCost(context.TotalCost);

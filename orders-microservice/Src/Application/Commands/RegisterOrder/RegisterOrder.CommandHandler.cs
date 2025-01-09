@@ -25,7 +25,7 @@ namespace Order.Application
                 new OrderStatus(command.Status),
                 new OrderIssueLocation(command.IssueLocation),
                 new OrderDestinationLocation(command.Destination),
-                new OrderTowDriverAssigned("Not assigned"),
+                new OrderTowDriverAssigned("Not Assigned."),
                 new OrderDetails(command.Details),
                 new OrderClientInformation(command.Name, command.Image, command.Policy, command.PhoneNumber),
                 new OrderTotalCost(0),

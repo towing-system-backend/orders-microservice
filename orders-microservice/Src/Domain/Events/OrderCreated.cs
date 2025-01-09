@@ -7,6 +7,7 @@ namespace Order.Domain
         string status,
         string issueLocation,
         string destination,
+        string towDriverAssigned,
         string details,
         string name,
         string image,
@@ -19,6 +20,7 @@ namespace Order.Domain
         public readonly string Status = status;
         public readonly string IssueLocation = issueLocation;
         public readonly string Destination = destination;
+        public readonly string TowDriverAssigned = towDriverAssigned;
         public readonly string Details = details;
         public readonly string Name = name;
         public readonly string Image = image;
@@ -32,6 +34,7 @@ namespace Order.Domain
             OrderStatus status,
             OrderIssueLocation issueLocation,
             OrderDestinationLocation destination,
+            OrderTowDriverAssigned toDriverAssigned,
             OrderDetails details,
             OrderClientInformation clientInformation,
             OrderTotalCost totalCost,
@@ -45,6 +48,7 @@ namespace Order.Domain
                     status.GetValue(),
                     issueLocation.GetValue(),
                     destination.GetValue(),
+                    toDriverAssigned.GetValue(),
                     details.GetValue(),
                     clientInformation.GetClientName(),
                     clientInformation.GetClientImage(),
