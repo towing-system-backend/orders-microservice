@@ -4,16 +4,16 @@ using Order.Application;
 
 namespace Order.Infrastructure
 {
-    public class FindOrderAssignedQuery : IService<FindOrderAssignedDto, FindOrderAssignedResponse>
+    public class FindOrderByIdQuery
     {
         private readonly IMongoCollection<MongoOrder> _orderCollection;
-        public FindOrderAssignedQuery()
+        public FindOrderByIdQuery()
         {
-            MongoClient client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
-            IMongoDatabase database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
+            var client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
+            var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
             _orderCollection = database.GetCollection<MongoOrder>("orders");
         }
-        public async Task<Result<FindOrderAssignedResponse>> Execute(FindOrderAssignedDto query)
+        public async Task<Result<FindOrderByIdResponse>> Execute(FindOrderAssignedDto query)
         {
             var filter = Builders<MongoOrder>.Filter.Eq(order => order.OrderId, query.Id);
             var res = await _orderCollection.Find(filter).FirstOrDefaultAsync();
@@ -21,7 +21,7 @@ namespace Order.Infrastructure
             if (res == null) throw new OrderNotFoundError();
             if (res.TowDriverAssigned == "Not Assigned") throw new NotAssignedTowDriverError();
 
-            var order = new FindOrderAssignedResponse
+            var order = new FindOrderByIdResponse
             (
                 res.Status,
                 res.IssueLocation,
@@ -33,7 +33,7 @@ namespace Order.Infrastructure
                 res.TowDriverAssigned
             );
 
-            return Result<FindOrderAssignedResponse>.MakeSuccess(order);
+            return Result<FindOrderByIdResponse>.MakeSuccess(order);
         }
     }
 }

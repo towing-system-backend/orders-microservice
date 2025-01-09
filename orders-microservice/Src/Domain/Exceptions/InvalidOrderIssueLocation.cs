@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderIssueLocationException : DomainException
-    {
-        public InvalidOrderIssueLocationException() : base("Invalid order issue location.") { }
-    }
+    public class InvalidOrderIssueLocationException() : DomainException("Invalid order issue location.");
 }

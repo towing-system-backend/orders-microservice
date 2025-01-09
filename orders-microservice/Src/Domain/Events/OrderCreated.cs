@@ -8,24 +8,27 @@ namespace Order.Domain
         string issueLocation,
         string destination,
         string towDriverAssigned,
+        string issuer,
         string details,
         string name,
         string image,
         string policyId,
         string phoneNumber,
-        decimal totalCost,
-        List<AdditionalCost>? additionalCosts
+        int identificationNumber,
+        decimal totalCost
         )
     {
         public readonly string Status = status;
         public readonly string IssueLocation = issueLocation;
         public readonly string Destination = destination;
         public readonly string TowDriverAssigned = towDriverAssigned;
+        public readonly string Issuer = issuer;
         public readonly string Details = details;
         public readonly string Name = name;
         public readonly string Image = image;
         public readonly string PolicyId = policyId;
         public readonly string PhoneNumber = phoneNumber;
+        public readonly int IdentificationNumber = identificationNumber;
         public readonly decimal TotalCost = totalCost;
         public readonly List<AdditionalCost>? AdditionalCosts = new();
 
@@ -34,11 +37,11 @@ namespace Order.Domain
             OrderStatus status,
             OrderIssueLocation issueLocation,
             OrderDestinationLocation destination,
-            OrderTowDriverAssigned toDriverAssigned,
+            OrderTowDriverAssigned towDriverAssigned,
+            OrderIssuer issuer,
             OrderDetails details,
             OrderClientInformation clientInformation,
-            OrderTotalCost totalCost,
-            List<AdditionalCost> additionalCosts
+            OrderTotalCost totalCost
         )
         {
             return new OrderCreatedEvent(
@@ -48,14 +51,15 @@ namespace Order.Domain
                     status.GetValue(),
                     issueLocation.GetValue(),
                     destination.GetValue(),
-                    toDriverAssigned.GetValue(),
+                    towDriverAssigned.GetValue(),
+                    issuer.GetValue(),
                     details.GetValue(),
                     clientInformation.GetClientName(),
                     clientInformation.GetClientImage(),
                     clientInformation.GetClientPolicyId(),
                     clientInformation.GetClientPhoneNumber(),
-                    totalCost.GetValue(),
-                    null
+                    clientInformation.GetClientIdentificationNumber(),
+                    totalCost.GetValue()
                 )
             );
         }

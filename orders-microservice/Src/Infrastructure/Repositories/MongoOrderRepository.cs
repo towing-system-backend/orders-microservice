@@ -10,26 +10,29 @@ namespace Order.Infrastructure
         private readonly IMongoCollection<MongoOrder> _orderCollection;
         public MongoOrderRepository()
         {
-            MongoClient client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI"));
-            IMongoDatabase database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME"));
+            var client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI"));
+            var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME"));
             _orderCollection = database.GetCollection<MongoOrder>("orders");
         }
 
         public async Task Save(Domain.Order order)
         {
-            var filter = Builders<MongoOrder>.Filter.Eq(order => order.OrderId, order.GetOrderId().GetValue());
+
+            var filter = Builders<MongoOrder>.Filter.Eq(MongoOrder => MongoOrder.OrderId, order.GetOrderId().GetValue());
             var update = Builders<MongoOrder>.Update
-                .Set(order => order.Status, order.GetOrderStatus().GetValue())
-                .Set(order => order.IssueLocation, order.GetOrderIssueLocation().GetValue())
-                .Set(order => order.Destination, order.GetOrderDestinationLocation().GetValue())
-                .Set(order => order.TowDriverAssigned, order.GetOrderTowDriverAssigned().GetValue())
-                .Set(order => order.Details, order.GetOrderDetails().GetValue())
-                .Set(order => order.Name, order.GetOrderClientInformation().GetClientName())
-                .Set(order => order.Image, order.GetOrderClientInformation().GetClientImage())
-                .Set(order => order.PolicyId, order.GetOrderClientInformation().GetClientPolicyId())
-                .Set(order => order.PhoneNumber, order.GetOrderClientInformation().GetClientPhoneNumber())
-                .Set(order => order.TotalCost, order.GetOrderTotalCost().GetValue())
-                .Set(order => order.AdditionalCosts, order.GetAdditionalCosts()?.Select(cost => new MongoAdditionalCost(
+                .Set(mongoOrder => mongoOrder.Status, order.GetOrderStatus().GetValue())
+                .Set(mongoOrder => mongoOrder.IssueLocation, order.GetOrderIssueLocation().GetValue())
+                .Set(mongoOrder => mongoOrder.Destination, order.GetOrderDestinationLocation().GetValue())
+                .Set(mongoOrder => mongoOrder.Issuer, order.GetOrderIssuer().GetValue())
+                .Set(mongoOrder => mongoOrder.TowDriverAssigned, order.GetOrderTowDriverAssigned()?.GetValue() ?? "Not assigned")
+                .Set(mongoOrder => mongoOrder.Details, order.GetOrderDetails().GetValue())
+                .Set(mongoOrder => mongoOrder.Name, order.GetOrderClientInformation().GetClientName())
+                .Set(mongoOrder => mongoOrder.Image, order.GetOrderClientInformation().GetClientImage())
+                .Set(mongoOrder => mongoOrder.PolicyId, order.GetOrderClientInformation().GetClientPolicyId())
+                .Set(mongoOrder => mongoOrder.PhoneNumber, order.GetOrderClientInformation().GetClientPhoneNumber())
+                .Set(mongoOrder => mongoOrder.IdentificationNumber, order.GetOrderClientInformation().GetClientIdentificationNumber())
+                .Set(mongoOrder => mongoOrder.TotalCost, order.GetOrderTotalCost().GetValue())
+                .Set(mongoOrder => mongoOrder.AdditionalCosts, order.GetAdditionalCosts()?.Select(cost => new MongoAdditionalCost(
                         cost.GetAdditionalCostId().GetValue(),
                         cost.GetAdditionalCostName().GetValue(),
                         cost.GetAdditionalCostCategory().GetValue(),
@@ -52,8 +55,10 @@ namespace Order.Infrastructure
                     new OrderIssueLocation(res.IssueLocation),
                     new OrderDestinationLocation(res.Destination),
                     new OrderTowDriverAssigned(res.TowDriverAssigned),
+                    new OrderIssuer(res.Issuer),
                     new OrderDetails(res.Details),
-                    new OrderClientInformation( res.Name, res.Image, res.PolicyId, res.PhoneNumber),
+                    new OrderClientInformation
+                        (res.Name, res.Image, res.PolicyId, res.PhoneNumber, res.IdentificationNumber),
                     new OrderTotalCost(res.TotalCost),
                     res.AdditionalCosts?.Select(ac => new AdditionalCost(
                         new AdditionalCostId(ac.AdditionalCostId),

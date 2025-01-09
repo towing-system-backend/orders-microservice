@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidTowDriverAssignedException : DomainException
-    {
-        public InvalidTowDriverAssignedException() : base("Invalid TowDriver Assigned.") { }
-    }
+    public class InvalidTowDriverAssignedException() : DomainException("Invalid TowDriver Assigned.");
 }

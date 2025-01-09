@@ -5,28 +5,30 @@ namespace Order.Domain
     public class Order : AggregateRoot<OrderId>
     {
         private new OrderId Id;
-        private OrderStatus Status;
-        private OrderIssueLocation IssueLocation;
-        private OrderDestinationLocation DestinationLocation;
-        private OrderTowDriverAssigned TowDriverAssigned;
-        private OrderDetails Details;
-        private OrderClientInformation ClientInformation;
-        private List<AdditionalCost>? AdditionalCosts;
-        private OrderTotalCost TotalCost;
+        private OrderStatus _status;
+        private OrderIssueLocation _issueLocation;
+        private OrderDestinationLocation _destinationLocation;
+        private OrderIssuer _issuer;
+        private OrderTowDriverAssigned _towDriverAssigned;
+        private OrderDetails _details;
+        private OrderClientInformation _clientInformation;
+        private List<AdditionalCost>? _additionalCosts;
+        private OrderTotalCost _totalCost;
 
-        private Order(OrderId OrderId) : base(OrderId)
+        private Order(OrderId orderId) : base(orderId)
         {
-            Id = OrderId;
+            Id = orderId;
         }
 
         public override void ValidateState()
         {
             if (Id == null ||
-                Status == null ||
-                IssueLocation == null ||
-                DestinationLocation == null ||
-                Details == null ||
-                ClientInformation == null
+                _status == null ||
+                _issueLocation == null ||
+                _destinationLocation == null ||
+                _details == null ||
+                _clientInformation == null ||
+                _issuer == null
                 )
             {
                 throw new InvalidOrderException();
@@ -34,14 +36,15 @@ namespace Order.Domain
         }
 
         public OrderId GetOrderId() => Id;
-        public OrderStatus GetOrderStatus() => Status;
-        public OrderIssueLocation GetOrderIssueLocation() => IssueLocation;
-        public OrderDestinationLocation GetOrderDestinationLocation() => DestinationLocation;
-        public OrderDetails GetOrderDetails() => Details;
-        public OrderTowDriverAssigned GetOrderTowDriverAssigned() => TowDriverAssigned;
-        public OrderClientInformation GetOrderClientInformation() => ClientInformation;
-        public List<AdditionalCost>? GetAdditionalCosts() => AdditionalCosts;
-        public OrderTotalCost GetOrderTotalCost() => TotalCost;
+        public OrderStatus GetOrderStatus() => _status;
+        public OrderIssueLocation GetOrderIssueLocation() => _issueLocation;
+        public OrderDestinationLocation GetOrderDestinationLocation() => _destinationLocation;
+        public OrderDetails GetOrderDetails() => _details;
+        public OrderIssuer GetOrderIssuer() => _issuer;
+        public OrderTowDriverAssigned GetOrderTowDriverAssigned() => _towDriverAssigned;
+        public OrderClientInformation GetOrderClientInformation() => _clientInformation;
+        public List<AdditionalCost>? GetAdditionalCosts() => _additionalCosts;
+        public OrderTotalCost GetOrderTotalCost() => _totalCost;
 
         public static Order Create(
             OrderId id,
@@ -49,6 +52,7 @@ namespace Order.Domain
             OrderIssueLocation issueLocation,
             OrderDestinationLocation destinationLocation,
             OrderTowDriverAssigned towdriverAssigned,
+            OrderIssuer issuer,
             OrderDetails details,
             OrderClientInformation clientInformation,
             OrderTotalCost totalCost,
@@ -61,14 +65,15 @@ namespace Order.Domain
                 return new Order(id)
                 {
                     Id = id,
-                    Status = status,
-                    IssueLocation = issueLocation,
-                    DestinationLocation = destinationLocation,
-                    TowDriverAssigned = towdriverAssigned,
-                    Details = details,
-                    ClientInformation = clientInformation,
-                    TotalCost = totalCost,
-                    AdditionalCosts = additionalCosts
+                    _status = status,
+                    _issueLocation = issueLocation,
+                    _destinationLocation = destinationLocation,
+                    _issuer = issuer,
+                    _towDriverAssigned = towdriverAssigned,
+                    _details = details,
+                    _clientInformation = clientInformation,
+                    _totalCost = totalCost,
+                    _additionalCosts = additionalCosts
                 };
             }
 
@@ -80,10 +85,10 @@ namespace Order.Domain
                     issueLocation,
                     destinationLocation,
                     towdriverAssigned,
+                    issuer,
                     details,
                     clientInformation,
-                    totalCost,
-                    additionalCosts!
+                    totalCost
                 )
             );
 
@@ -107,29 +112,30 @@ namespace Order.Domain
 
         private void OnOrderCreatedEvent(OrderCreated context)
         {
-            Status = new OrderStatus(context.Status);
-            IssueLocation = new OrderIssueLocation(context.IssueLocation);
-            DestinationLocation = new OrderDestinationLocation(context.Destination);
-            TowDriverAssigned = new OrderTowDriverAssigned(context.TowDriverAssigned);
-            Details = new OrderDetails(context.Details);
-            ClientInformation = new OrderClientInformation(context.Name, context.Image, context.PolicyId, context.PhoneNumber);
-            TotalCost = new OrderTotalCost(context.TotalCost);
-            AdditionalCosts = context.AdditionalCosts;
+            _status = new OrderStatus(context.Status);
+            _issueLocation = new OrderIssueLocation(context.IssueLocation);
+            _destinationLocation = new OrderDestinationLocation(context.Destination);
+            _issuer = new OrderIssuer(context.Issuer);
+            _details = new OrderDetails(context.Details);
+            _clientInformation = new OrderClientInformation
+                (context.Name, context.Image, context.PolicyId, context.PhoneNumber, context.IdentificationNumber);
+            _totalCost = new OrderTotalCost(context.TotalCost);
+            _additionalCosts = context.AdditionalCosts;
         }
 
         private void OnOrderStatusUpdatedEvent(OrderStatusUpdated context)
         {
-            Status = new OrderStatus(context.Status);
+            _status = new OrderStatus(context.Status);
         }
 
         private void OnOrderTowDriverAssignedUpdatedEvent(OrderTowDriverAssignedUpdated context)
         {
-            TowDriverAssigned = new OrderTowDriverAssigned(context.TowDriverAssigned);
+            _towDriverAssigned = new OrderTowDriverAssigned(context.TowDriverAssigned);
         }
 
         private void OnOrderDestinationLocationUpdatedEvent(OrderDestinationLocationUpdated context)
         {
-            DestinationLocation = new OrderDestinationLocation(context.DestinationLocation);
+            _destinationLocation = new OrderDestinationLocation(context.DestinationLocation);
         }
 
         public void CreateAdditionalCost(
@@ -144,9 +150,9 @@ namespace Order.Domain
 
         private void OnCreateAdditionalCostEvent(AdditionalCostCreated context)
         {
-            if (AdditionalCosts == null) AdditionalCosts = new List<AdditionalCost>();
+            _additionalCosts ??= new List<AdditionalCost>();
 
-            AdditionalCosts.Add(
+            _additionalCosts.Add(
                 new AdditionalCost(
                     new AdditionalCostId(context.Id),
                     new AdditionalCostAmount(context.Amount),
@@ -163,7 +169,10 @@ namespace Order.Domain
 
         private void OnAdditionalCostRemovedEvent(AdditionalCostRemoved context)
         {
-            AdditionalCosts.RemoveAll(x => x.GetAdditionalCostId().GetValue() == context.Id);
+            _additionalCosts?.RemoveAll(x =>
+            {
+                return x.GetAdditionalCostId().GetValue() == context.Id;
+            });
         }
     }
 }

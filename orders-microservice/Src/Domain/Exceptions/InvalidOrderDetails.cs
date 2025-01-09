@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderDetailsException : DomainException
-    {
-        public InvalidOrderDetailsException() : base("Details must be specified.") { }
-    }
+    public class InvalidOrderDetailsException() : DomainException("Details must be specified.");
 }

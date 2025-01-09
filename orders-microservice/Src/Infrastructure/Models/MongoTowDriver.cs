@@ -20,10 +20,11 @@ namespace Order.Infrastructure
     )
     {
         [BsonId]
+
         public string TowDriverId = towDriverId;
         public string Name = name;
         public string Email = email;
-        public string DrivingLicenseOwnerName = drivingLicenseOwnerName;
+        public string DrivingLiceseOwnerName = drivingLicenseOwnerName;
         public DateOnly DrivingLicenseIssueDate = drivingLicenseIssueDate;
         public DateOnly DrivingLicenseExpirationDate = drivingLicenseExpirationDate;
         public string MedicalCertificateOwnerName = medicalCertificateOwnerName;

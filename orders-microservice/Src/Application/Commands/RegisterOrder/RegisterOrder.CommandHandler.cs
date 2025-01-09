@@ -26,8 +26,10 @@ namespace Order.Application
                 new OrderIssueLocation(command.IssueLocation),
                 new OrderDestinationLocation(command.Destination),
                 new OrderTowDriverAssigned("Not Assigned."),
+                new OrderIssuer(command.Issuer),
                 new OrderDetails(command.Details),
-                new OrderClientInformation(command.Name, command.Image, command.Policy, command.PhoneNumber),
+                new OrderClientInformation
+                    (command.Name, command.Image, command.Policy, command.PhoneNumber, command.IdentificationNumber),
                 new OrderTotalCost(0),
                 null
             );

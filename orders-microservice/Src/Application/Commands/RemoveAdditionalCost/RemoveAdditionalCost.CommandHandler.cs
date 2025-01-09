@@ -21,7 +21,7 @@ namespace Order.Application
             if (!orderRegistered.HasValue()) return Result<RemoveAdditionalCostResponse>.MakeError(new OrderNotFoundError());
             var order = orderRegistered.Unwrap();
 
-            if (!order.GetAdditionalCosts().Any(x => x.GetAdditionalCostId().GetValue() == command.AdditionalCostId))
+            if (order.GetAdditionalCosts()!.All(x => x.GetAdditionalCostId().GetValue() != command.AdditionalCostId))
                 return Result<RemoveAdditionalCostResponse>.MakeError(new AdditionalCostNotFoundError());
             
             order.RemoveAdditionalCost(new AdditionalCostId(command.AdditionalCostId));

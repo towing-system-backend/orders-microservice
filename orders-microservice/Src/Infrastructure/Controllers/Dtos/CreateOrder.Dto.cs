@@ -4,7 +4,8 @@ namespace Order.Infrastructure
 {
     public record CreateOrderDto
     (
-        [Required][RegularExpression(@"^(Active|Inactive)$", ErrorMessage = "Status must be 'Active', or 'Inactive'.")]
+
+        [Required][RegularExpression(@"^(ToAssign|ToAccept|Accepted|Located|InProgress|Completed|Cancelled|Paid)$", ErrorMessage = "Status is not valid.")]
         string Status,
 
         [Required][StringLength(512, MinimumLength = 8)]
@@ -12,6 +13,9 @@ namespace Order.Infrastructure
 
         [Required][StringLength(512, MinimumLength = 4)]
         string Destination,
+        
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
+        string Issuer,
 
         [Required][StringLength(512, MinimumLength = 4)]
         string Details,
@@ -22,10 +26,13 @@ namespace Order.Infrastructure
         [Required][StringLength(2048, MinimumLength = 8)]
         string Image,
 
-        [Required][StringLength(128, MinimumLength = 32)]
+        [Required][RegularExpression(@"^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$", ErrorMessage = "Id must be a 'Guid'.")]
         string Policy,
 
         [Required][RegularExpression(@"^(0?4(14|24|16|26)\d{7})$", ErrorMessage = "Invalid phone number format.")]
-        string PhoneNumber
+        string PhoneNumber,
+
+        [Required][Range(999999, 100000000)]
+        int IdentificationNumber
     );
 }

@@ -8,14 +8,24 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using Order.Domain;
 using System.Text.Json.Nodes;
-using RabbitMQ.Contracts;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using orders_microservice.Utils.Core.Src.Application.NotificationService;
+using orders_microservice.Utils.Core.Src.Infrastructure.FireBaseNotificationsService;
 using Order.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("FIREBASE-SERVICES"))
+});
+
+
 //builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
+builder.Services.AddSingleton<INotificationService, FirebaseNotificationsService>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
 builder.Services.AddScoped<IdService<string>, GuidGenerator>();
 builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
@@ -52,7 +62,7 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-
+builder.Services.AddControllers();
 
 builder.Services.AddMassTransit(busConfigurator =>
 {
@@ -94,6 +104,7 @@ builder.Services.AddMassTransit(busConfigurator =>
 });
 
 var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment())
 {

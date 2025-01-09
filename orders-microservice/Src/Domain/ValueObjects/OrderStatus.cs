@@ -5,7 +5,8 @@ namespace Order.Domain
     public class OrderStatus : IValueObject<OrderStatus>
     {
         private readonly string _value;
-        private static readonly string[] ValidStatuses = { "Active", "Inactive" };
+        private static readonly string[] ValidStatuses =
+            ["ToAssign", "ToAccept", "Accepted", "Located", "InProgress", "Completed", "Cancelled", "Paid"];
 
         public OrderStatus(string value)
         {
@@ -13,13 +14,12 @@ namespace Order.Domain
             {
                 throw new InvalidOrderStatusException();
             }
-
             _value = value;
         }
 
         private static bool IsValidStatus(string value)
         {
-            return Array.Exists(ValidStatuses, status => status.Equals(value, StringComparison.OrdinalIgnoreCase));
+            return ValidStatuses.Contains(value, StringComparer.OrdinalIgnoreCase);
         }
 
         public string GetValue() => _value;

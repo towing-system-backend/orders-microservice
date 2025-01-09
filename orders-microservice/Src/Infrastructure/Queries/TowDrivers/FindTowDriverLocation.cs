@@ -1,16 +1,17 @@
 ﻿using Application.Core;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using Order.Infrastructure;
 
-namespace Order.Infrastructure
+namespace orders_microservice.Src.Infrastructure.Queries.TowDrivers
 {
     public class FindTowDriverByStatusQuery
     {
         private readonly IMongoCollection<MongoTowDriver> _towDriverCollection;
         public FindTowDriverByStatusQuery()
         {
-            MongoClient client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
-            IMongoDatabase database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
+            var client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
+            var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
             _towDriverCollection = database.GetCollection<MongoTowDriver>("tow-drivers");
         }
 

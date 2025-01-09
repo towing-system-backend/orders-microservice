@@ -4,18 +4,18 @@ namespace Application.Core
 {
     public class OrderStateMachine : MassTransitStateMachine<OrderStatusStates>
     {
-        public State ToAssign { get; private set; }
-        public State Cancelled { get; private set; }
-        public State Accepted { get; private set; }
-        public State ToAccept { get; private set; }
-        public State Located { get; private set; }
-        public State Completed { get; private set; }
-        public State Paid { get; private set; }
-        public State InProgress { get; private set; }
-        public Event<OrderCreatedEventt> OrderCreated { get; private set; }
-        public Event<UpdateOrderStatusEvent> OrderUpdated { get; private set; }
-        public Event<OrderCancelledEvent> OrderCancelled { get; private set; }
-        public Event<OrderRejectedEvent> OrderRejected { get; private set; }
+        public State? ToAssign { get; private set; }
+        public State? Cancelled { get; private set; }
+        public State? Accepted { get; private set; }
+        public State? ToAccept { get; private set; }
+        public State? Located { get; private set; }
+        public State? Completed { get; private set; }
+        public State? Paid { get; private set; }
+        public State? InProgress { get; private set; }
+        public Event<OrderCreatedEventt>? OrderCreated { get; private set; }
+        public Event<UpdateOrderStatusEvent>? OrderUpdated { get; private set; }
+        public Event<OrderCancelledEvent>? OrderCancelled { get; private set; }
+        public Event<OrderRejectedEvent>? OrderRejected { get; private set; }
 
 
         public OrderStateMachine()

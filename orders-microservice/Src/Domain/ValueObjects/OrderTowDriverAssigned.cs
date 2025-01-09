@@ -15,13 +15,10 @@ namespace Order.Domain
             else if (GuidEx.IsGuid(value))
             {
                 _value = value;
-            } else 
-            {
-                throw new InvalidTowDriverAssignedException();
             }
         }
 
-        public string GetValue() => _value;
+        public string? GetValue() => _value;
         public bool Equals(OrderTowDriverAssigned other) => _value == other._value;
     }
 }

@@ -4,7 +4,7 @@ using Order.Application;
 
 namespace Order.Infrastructure
 {
-    public class FindOrderByStatusQuery : IService<FindOrderByStatusDto, List<FindOrderByStatusResponse>>
+    public class FindOrderByStatusQuery 
     {
         private readonly IMongoCollection<MongoOrder> _orderCollection;
         public FindOrderByStatusQuery()
@@ -30,7 +30,7 @@ namespace Order.Infrastructure
                     order.PolicyId,
                     order.PhoneNumber,
                     order.TotalCost,
-                    order.AdditionalCosts.Select(cost => new AdditonalCostResponse
+                    order.AdditionalCosts!.Select(cost => new AdditonalCostResponse
                     (
                         cost.AdditionalCostId,
                         cost.Name,

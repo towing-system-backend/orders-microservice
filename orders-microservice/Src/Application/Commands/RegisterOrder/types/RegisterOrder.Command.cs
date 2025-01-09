@@ -4,10 +4,12 @@
         string Status,
         string IssueLocation,
         string Destination,
+        string Issuer,
         string Details,
         string Name,
         string Image,
         string Policy,
-        string PhoneNumber
+        string PhoneNumber,
+        int IdentificationNumber
     );
 }

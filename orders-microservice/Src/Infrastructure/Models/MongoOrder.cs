@@ -7,12 +7,14 @@ namespace Order.Infrastructure
         string status,
         string issueLocation,
         string destination,
+        string issuer,
         string towDriverAssigned,
         string details,
         string name,
         string image,
         string policy,
         string phoneNumber,
+        int identificationNumber,
         decimal totalCost,
         List<MongoAdditionalCost> additionalCosts
     )
@@ -22,14 +24,16 @@ namespace Order.Infrastructure
         public string Status = status;
         public string IssueLocation = issueLocation;
         public string Destination = destination;
+        public string Issuer = issuer;
         public string TowDriverAssigned = towDriverAssigned;
         public string Details = details;
         public string Name = name;
         public string Image = image;
         public string PolicyId = policy;
         public string PhoneNumber = phoneNumber;
+        public int IdentificationNumber = identificationNumber;
         public decimal TotalCost = totalCost;
-        public List<MongoAdditionalCost>? AdditionalCosts = additionalCosts ?? new List<MongoAdditionalCost>();
+        public List<MongoAdditionalCost>? AdditionalCosts = additionalCosts ?? [];
     }
 
     public class MongoAdditionalCost(

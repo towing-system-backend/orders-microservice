@@ -1,6 +1,6 @@
 ﻿namespace Order.Infrastructure
 {
-    public record FindOrderAssignedResponse
+    public record FindOrderByIdResponse
     (
         string Status,
         string IssueLocation,

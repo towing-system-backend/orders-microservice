@@ -31,12 +31,12 @@ namespace Order.Application
 
             var drivers = res["TowLocations"]?.AsArray()
                 .Select(l => new AssignTowDriverResponse(
-                    l["TowDriverId"]?.ToString()!,
+                    l?["TowDriverId"]?.ToString() ?? string.Empty,
                     l["Latitude"].GetValue<double>(),
                     l["Longitude"].GetValue<double>(),
                     l["Distance"].GetValue<double>(),
-                    l["Address"].ToString(),
-                    l["EstimatedTimeOfArrival"]?.ToString()!
+                    l["Address"]?.ToString(),
+                    l["EstimatedTimeOfArrival"]?.ToString()
                 )
             ).ToList();
 

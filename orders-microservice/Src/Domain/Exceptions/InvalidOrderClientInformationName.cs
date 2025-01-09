@@ -2,8 +2,5 @@
 
 namespace Order.Domain
 {
-    public class InvalidOrderClientInformationNameException : DomainException
-    {
-        public InvalidOrderClientInformationNameException() : base("Invalid client name.") { }
-    }
+    public class InvalidOrderClientInformationNameException() : DomainException("Invalid client name.");
 }

@@ -6,6 +6,5 @@ namespace Order.Domain
     {
         Task Save(Order order);
         Task<Optional<Order>> FindById(string orderId);
-
     }
 }

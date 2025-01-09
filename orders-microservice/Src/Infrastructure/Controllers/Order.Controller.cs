@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;
 using Order.Domain;
 using Order.Application; 
+using orders_microservice.Utils.Core.Src.Application.NotificationService;
+using orders_microservice.Src.Infrastructure.Queries.TowDrivers;
+
 
 namespace Order.Infrastructure
 {
@@ -16,6 +19,7 @@ namespace Order.Infrastructure
         IEventStore eventStore,
         IOrderRepository orderRepository,
         IPublishEndpoint publishEndpoint,
+        INotificationService notificationService,
         ILocationService<JsonNode> locationService,
         ISagaStateMachineService<string> sagaStateMachineService,
         IPerformanceLogsRepository performanceLogsRepository
@@ -29,6 +33,7 @@ namespace Order.Infrastructure
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly ILocationService<JsonNode> _locationService = locationService;
         private readonly ISagaStateMachineService<string> _sagaStateMachineService = sagaStateMachineService;
+        private readonly INotificationService _notificationService = notificationService;
         private readonly IPerformanceLogsRepository _performanceLogsRepository = performanceLogsRepository;
 
         [HttpPost("create")]
@@ -38,12 +43,13 @@ namespace Order.Infrastructure
                 createOrderDto.Status,
                 createOrderDto.IssueLocation,
                 createOrderDto.Destination,
+                createOrderDto.Issuer,
                 createOrderDto.Details,
                 createOrderDto.Name,
                 createOrderDto.Image,
                 createOrderDto.Policy,
-                createOrderDto.PhoneNumber
-
+                createOrderDto.PhoneNumber,
+                createOrderDto.IdentificationNumber
             );
 
             var handler =
@@ -77,7 +83,7 @@ namespace Order.Infrastructure
                     x => new AdditionalCostCommand(
                         x.Name,
                         x.Category,
-                        x.Amount.Value 
+                        x.Amount!.Value 
                     )
                 ).ToList()
             );
@@ -173,7 +179,7 @@ namespace Order.Infrastructure
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
             var data = new FindOrderAssignedDto(id);
-            var query = new FindOrderAssignedQuery();
+            var query = new FindOrderByIdQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
         }
@@ -202,6 +208,20 @@ namespace Order.Infrastructure
             var res = await handler.Execute(command);
             
             return Ok(res.Unwrap());
+        }
+
+        [HttpPost("send/notification")]
+        public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
+        {
+            try
+            {
+                await _notificationService.SendNotification(deviceToken, title, body);
+                return Ok("Notification sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending notification: {ex.Message}");
+            }
         }
     }
 }
