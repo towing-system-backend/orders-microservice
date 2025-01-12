@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using Order.Infrastructure;
 
-namespace orders_microservice.Src.Infrastructure.Queries.TowDrivers
+namespace Order.Infrastructure
 {
     public class FindTowDriverByStatusQuery
     {
@@ -15,17 +15,26 @@ namespace orders_microservice.Src.Infrastructure.Queries.TowDrivers
             _towDriverCollection = database.GetCollection<MongoTowDriver>("tow-drivers");
         }
 
-        public async Task<Result<Dictionary<string, string>>> Execute()
+        public async Task<Result<List<FindTowDriverInformationResponse>>> Execute()
         {
             var filter = Builders<MongoTowDriver>.Filter.Eq(towDriver => towDriver.Status, "Active");
             var res = await _towDriverCollection.Find(filter).ToListAsync();
 
             if (res.IsNullOrEmpty())
-                return Result<Dictionary<string, string>>.MakeError(new Exception("Tow drivers not found."));
+                return Result<List<FindTowDriverInformationResponse>>.MakeError(new Exception("Tow drivers not found."));
 
-            var towDriversLocation = res.ToDictionary(towDriver => towDriver.TowDriverId, towDriver => towDriver.Location!);
-
-            return Result<Dictionary<string, string>>.MakeSuccess(towDriversLocation);
+            var towDriversInfo = res.Select(
+                t => new FindTowDriverInformationResponse
+                (
+                    t.TowDriverId,
+                    t.Location!,
+                    t.Email
+                )).ToList();
+            foreach(var driver in towDriversInfo)
+            {
+                Console.WriteLine(driver.Location);
+            }
+            return Result<List<FindTowDriverInformationResponse>>.MakeSuccess(towDriversInfo);
         }
     }
 }

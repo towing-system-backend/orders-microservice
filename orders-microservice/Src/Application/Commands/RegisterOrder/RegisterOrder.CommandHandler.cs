@@ -1,6 +1,6 @@
 ﻿using Application.Core;
-using MassTransit;
 using Order.Domain;
+using RabbitMQ.Contracts;
 
 namespace Order.Application
 {
@@ -9,14 +9,14 @@ namespace Order.Application
     IMessageBrokerService messageBrokerService,
     IEventStore eventStore,
     IOrderRepository orderRepository,
-    IPublishEndpoint publishEndpoint
+    IPublishEndPointService publishEndpoint
     ) : IService<RegisterOrderCommand, RegisterOrderResponse>
     {
         private readonly IdService<string> _idService = idService;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
         private readonly IEventStore _eventStore = eventStore;
         private readonly IOrderRepository _orderRepository = orderRepository;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IPublishEndPointService _publishEndpoint = publishEndpoint;
         public async Task<Result<RegisterOrderResponse>> Execute(RegisterOrderCommand command)
         {
             var id = _idService.GenerateId();
@@ -31,14 +31,17 @@ namespace Order.Application
                 new OrderClientInformation
                     (command.Name, command.Image, command.Policy, command.PhoneNumber, command.IdentificationNumber),
                 new OrderTotalCost(0),
+                new OrderTotalDistance(0),
                 null
             );
-
             var events = order.PullEvents();
-            await _publishEndpoint.Publish(new OrderCreatedEventt(Guid.Parse(id)));
-            await _orderRepository.Save(order);
-            await _eventStore.AppendEvents(events);
-            await _messageBrokerService.Publish(events);
+            await Task.WhenAll
+            (
+                _publishEndpoint.Publish(new EventOrderToAssign(Guid.Parse(id), DateTime.Now)),
+                _orderRepository.Save(order),
+                _eventStore.AppendEvents(events),
+                _messageBrokerService.Publish(events)
+            );
 
             return Result<RegisterOrderResponse>.MakeSuccess(new RegisterOrderResponse(id));
         }

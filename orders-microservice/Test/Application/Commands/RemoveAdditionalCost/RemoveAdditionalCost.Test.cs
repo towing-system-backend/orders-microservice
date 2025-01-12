@@ -69,6 +69,7 @@ namespace Order.Test
                    25547458
                ),
                new OrderTotalCost(0),
+               new OrderTotalDistance(0),
                [
                     new AdditionalCost(
                         new AdditionalCostId("28499581-b066-4ad7-b0ad-b6cc266e847e"),
@@ -118,6 +119,7 @@ namespace Order.Test
                    25547458
                ),
                new OrderTotalCost(0),
+               new OrderTotalDistance(0),
                [
                     new AdditionalCost(
                         new AdditionalCostId("62a25158-b2c5-4566-8167-4b51e14b7d61"),

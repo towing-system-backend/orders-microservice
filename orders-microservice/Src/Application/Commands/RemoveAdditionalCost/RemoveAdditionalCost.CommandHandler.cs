@@ -26,9 +26,12 @@ namespace Order.Application
             
             order.RemoveAdditionalCost(new AdditionalCostId(command.AdditionalCostId));
             var events = order.PullEvents();
-            await _orderRepository.Save(order);
-            await _eventStore.AppendEvents(events);
-            await _messageBrokerService.Publish(events);
+            await Task.WhenAll
+            (
+                _orderRepository.Save(order),
+                _eventStore.AppendEvents(events),
+                _messageBrokerService.Publish(events)
+            );
             return Result<RemoveAdditionalCostResponse>.MakeSuccess(new RemoveAdditionalCostResponse(command.OrderId));
         }
     }

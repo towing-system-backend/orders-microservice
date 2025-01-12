@@ -13,24 +13,31 @@ namespace Order.Infrastructure
             var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
             _orderCollection = database.GetCollection<MongoOrder>("orders");
         }
-        public async Task<Result<FindOrderByIdResponse>> Execute(FindOrderAssignedDto query)
+        public async Task<Result<FindOrderByIdResponse>> Execute(FindOrderByIdDto query)
         {
             var filter = Builders<MongoOrder>.Filter.Eq(order => order.OrderId, query.Id);
             var res = await _orderCollection.Find(filter).FirstOrDefaultAsync();
 
             if (res == null) throw new OrderNotFoundError();
-            if (res.TowDriverAssigned == "Not Assigned") throw new NotAssignedTowDriverError();
 
-            var order = new FindOrderByIdResponse
-            (
+            var order = new FindOrderByIdResponse(
+                res.OrderId,
                 res.Status,
                 res.IssueLocation,
                 res.Destination,
+                res.TowDriverAssigned,
                 res.Details,
                 res.Name,
                 res.Image,
+                res.PolicyId,
                 res.PhoneNumber,
-                res.TowDriverAssigned
+                res.TotalCost,
+                res.AdditionalCosts.Select(cost => new AdditonalCostResponse(
+                    cost.AdditionalCostId,
+                    cost.Name,
+                    cost.Category,
+                    cost.Amount
+                )).ToList()
             );
 
             return Result<FindOrderByIdResponse>.MakeSuccess(order);

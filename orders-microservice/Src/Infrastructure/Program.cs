@@ -8,7 +8,6 @@ Env.Load();
 builder.Services.ConfigureServices();
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.ConfigureMassTransit(builder.Configuration);
-builder.Services.ConfigureFirebase();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<GlobalExceptionFilter>();

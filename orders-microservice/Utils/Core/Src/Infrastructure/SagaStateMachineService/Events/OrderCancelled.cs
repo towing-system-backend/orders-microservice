@@ -1,13 +1,8 @@
-﻿namespace Application.Core
+﻿namespace RabbitMQ.Contracts
 {
-    public class OrderCancelledEvent
-    {
-        public Guid OrderId { get; }
-        public DateTime CancelledAt { get; set; }
-
-        public OrderCancelledEvent(Guid orderId)
-        {
-            OrderId = orderId;
-        }
-    }
+    public record EventOrderCancelled
+    (
+        Guid OrderId, 
+        DateTime CancelledAt
+    ) : IRabbitMQMessage;
 }

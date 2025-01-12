@@ -1,23 +1,26 @@
 ﻿using Application.Core;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using Order.Application;
 
 namespace Order.Infrastructure
 {
-    public class FindOrderByStatusQuery 
+    public class FindAllOrdersQuery 
     {
         private readonly IMongoCollection<MongoOrder> _orderCollection;
-        public FindOrderByStatusQuery()
+        public FindAllOrdersQuery()
         {
             MongoClient client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
             IMongoDatabase database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
             _orderCollection = database.GetCollection<MongoOrder>("orders");
         }
-        public async Task<Result<List<FindOrderByStatusResponse>>> Execute(FindOrderByStatusDto query)
+        public async Task<Result<List<FindAllOrdersResponse>>> Execute()
         {
-            var filter = Builders<MongoOrder>.Filter.Eq(order => order.Status, query.Status);
-            var orders = await _orderCollection.Find(filter)
-                .Project(order => new FindOrderByStatusResponse
+            var filter = Builders<MongoOrder>.Filter.Empty;
+            var res = await _orderCollection.Find(filter).ToListAsync();
+            if (res.IsNullOrEmpty()) 
+                throw new OrdersNotFoundError();
+            var orders = res.Select(order => new FindAllOrdersResponse
                 (
                     order.OrderId,
                     order.Status,
@@ -38,10 +41,8 @@ namespace Order.Infrastructure
                         cost.Amount
                     )).ToList()
                 ))
-                .ToListAsync();
-
-            if (!orders.Any()) throw new OrdersNotFoundError();
-            return Result<List<FindOrderByStatusResponse>>.MakeSuccess(orders);
+                .ToList();
+            return Result<List<FindAllOrdersResponse>>.MakeSuccess(orders);
         }
     }
 }

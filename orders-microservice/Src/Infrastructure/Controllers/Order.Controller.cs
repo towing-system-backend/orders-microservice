@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;
 using Order.Domain;
 using Order.Application; 
-using orders_microservice.Utils.Core.Src.Application.NotificationService;
-using orders_microservice.Src.Infrastructure.Queries.TowDrivers;
 using Microsoft.AspNetCore.Authorization;
 
 
@@ -19,8 +17,7 @@ namespace Order.Infrastructure
         IMessageBrokerService messageBrokerService,
         IEventStore eventStore,
         IOrderRepository orderRepository,
-        IPublishEndpoint publishEndpoint,
-        INotificationService notificationService,
+        IPublishEndPointService publishEndpoint,
         ILocationService<JsonNode> locationService,
         ISagaStateMachineService<string> sagaStateMachineService,
         IPerformanceLogsRepository performanceLogsRepository
@@ -31,10 +28,9 @@ namespace Order.Infrastructure
         private readonly IEventStore _eventStore = eventStore;
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IPublishEndPointService _publishEndpoint = publishEndpoint;
         private readonly ILocationService<JsonNode> _locationService = locationService;
         private readonly ISagaStateMachineService<string> _sagaStateMachineService = sagaStateMachineService;
-        private readonly INotificationService _notificationService = notificationService;
         private readonly IPerformanceLogsRepository _performanceLogsRepository = performanceLogsRepository;
 
         [HttpPost("create")]
@@ -112,7 +108,7 @@ namespace Order.Infrastructure
         }
 
         [HttpPatch("update/status")]
-        [Authorize(Roles = "Admin, CabinOperator")]
+        [Authorize(Roles = "Admin, CabinOperator, TowDriver")]
         public async Task<ObjectResult> UpdateOrderByStatus([FromBody] UpdateOrderStatusDto updateOrderStatusDto)
         {
             var command = new UpdateOrderStatusCommand(
@@ -142,13 +138,15 @@ namespace Order.Infrastructure
         [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> AssignTowDriver([FromBody] AssignTowDriverDto assignTowDriverDto)
         {
-
-            var query = new FindTowDriverByStatusQuery();
-            var towDrivers = await query.Execute();
-
+            var locationQuery = new FindTowDriverByStatusQuery();
+            var result = await locationQuery.Execute();
+            var towDrivers = result.Unwrap();
+            var devicesQuery = new FindTowDriversDeviceTokenQuery();
+            var devicesId = await devicesQuery.Execute(towDrivers);
             var command = new AssignTowDriverCommand(
                 assignTowDriverDto.OrderId,
-                towDrivers.Unwrap()
+                towDrivers.ToDictionary(towDriver => towDriver.TowDriverId, towDriver => towDriver.Location!),
+                devicesId.Unwrap()
             );
 
             var handler =
@@ -167,25 +165,80 @@ namespace Order.Infrastructure
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
-
-             return Ok(res.Unwrap()); 
+            return Ok(res.Unwrap()); 
         }
 
-        [HttpGet("find/status/{status}")]
-        [Authorize(Roles = "Admin, CabinOperator")]
-        public async Task<ObjectResult> FindOrderByStatus(string status)
+
+        [HttpPatch("driver/response")]
+        [Authorize(Roles = "Admin, CabinOperator, TowDriver")]
+        public async Task<ObjectResult> DriverResponse([FromBody] TowDriverResponseDto towDriverResponseDto)
         {
-            var data = new FindOrderByStatusDto(status);
-            var query = new FindOrderByStatusQuery();
-            var res = await query.Execute(data);
+            var command = new TowDriverResponseCommand(
+                towDriverResponseDto.OrderId,
+                towDriverResponseDto.Status,
+                towDriverResponseDto.Response
+            );
+
+            var handler =
+              new ExceptionCatcher<TowDriverResponseCommand, TowDriverResponseResponse>(
+                  new PerfomanceMonitor<TowDriverResponseCommand, TowDriverResponseResponse>(
+                      new LoggingAspect<TowDriverResponseCommand, TowDriverResponseResponse>(
+                          new TowDriverResponseCommandHandler(
+                              _eventStore,
+                              _orderRepository,
+                              _publishEndpoint,
+                              _messageBrokerService
+                          ), _logger
+                      ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
+                  ), ExceptionParser.Parse
+              );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
+        }
+
+        [Authorize(Roles = "Admin, CabinOperator")]
+        [HttpPatch("calculate/total")]
+        public async Task<ObjectResult> CalculateOrderTotalCost([FromBody] CalculateOrderTotalCostDto calculateOrderTotalCostDto) 
+        {
+            var query = new FindClientPolicyQuery();
+            var result = await query.Execute(calculateOrderTotalCostDto.OrderId);
+            var clientPolicy = result.Unwrap();
+            var command = new CalculateOrderTotalCostCommand(
+                calculateOrderTotalCostDto.OrderId,
+                clientPolicy.coverageAmount,
+                clientPolicy.coverageDistance
+            );
+
+            var handler =
+                new ExceptionCatcher<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                    new PerfomanceMonitor<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                        new LoggingAspect<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                            new CalculateOrderTotalCostCommandHandler(
+                                _eventStore,
+                                _orderRepository,
+                                _messageBrokerService
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
+                    ), ExceptionParser.Parse
+                );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
+        }
+
+        [HttpGet("find/all")]
+        [Authorize(Roles = "Admin, CabinOperator")]
+        public async Task<ObjectResult> FindOrderByStatus()
+        {
+            var query = new FindAllOrdersQuery();
+            var res = await query.Execute();
             return Ok(res.Unwrap());
         }
 
         [HttpGet("find/{id}")]
-        [Authorize(Roles = "Admin, CabinOperator")]
-        public async Task<ObjectResult> FindOrderAssigned(string id)
+        [Authorize(Roles = "Admin, CabinOperator, TowDriver")]
+        public async Task<ObjectResult> FindOrderById(string id)
         {
-            var data = new FindOrderAssignedDto(id);
+            var data = new FindOrderByIdDto(id);
             var query = new FindOrderByIdQuery();
             var res = await query.Execute(data);
             return Ok(res.Unwrap());
@@ -216,21 +269,6 @@ namespace Order.Infrastructure
             var res = await handler.Execute(command);
             
             return Ok(res.Unwrap());
-        }
-
-        [HttpPost("send/notification")]
-        [Authorize(Roles = "Admin, CabinOperator")]
-        public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
-        {
-            try
-            {
-                await _notificationService.SendNotification(deviceToken, title, body);
-                return Ok("Notification sent successfully.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error sending notification: {ex.Message}");
-            }
         }
     }
 }
