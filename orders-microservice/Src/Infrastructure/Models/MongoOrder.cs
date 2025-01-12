@@ -16,6 +16,7 @@ namespace Order.Infrastructure
         string phoneNumber,
         int identificationNumber,
         decimal totalCost,
+        double totalDistance,
         List<MongoAdditionalCost> additionalCosts
     )
     {
@@ -33,6 +34,7 @@ namespace Order.Infrastructure
         public string PhoneNumber = phoneNumber;
         public int IdentificationNumber = identificationNumber;
         public decimal TotalCost = totalCost;
+        public double TotalDistance = totalDistance;
         public List<MongoAdditionalCost>? AdditionalCosts = additionalCosts ?? [];
     }
 

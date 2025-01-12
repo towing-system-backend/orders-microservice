@@ -4,10 +4,10 @@ namespace Order.Infrastructure
 {
     public record AdditionalCostDto
     (
-        [Required][StringLength(64, MinimumLength = 4)]
+        [StringLength(64, MinimumLength = 4)]
         string Name,
 
-        [Required][StringLength(64, MinimumLength = 4)]
+        [StringLength(64, MinimumLength = 4)]
         string Category,
 
         [Range(0.01, double.MaxValue)]
@@ -29,6 +29,6 @@ namespace Order.Infrastructure
         [StringLength(512, MinimumLength = 4)]
         string? Destination,
 
-        List<AdditionalCostDto> AdditionalCosts
+        List<AdditionalCostDto>? AdditionalCosts
     );
 }

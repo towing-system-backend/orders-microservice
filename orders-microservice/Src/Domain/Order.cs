@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using orders_microservice.Src.Domain.Events;
 
 namespace Order.Domain
 {
@@ -14,6 +15,7 @@ namespace Order.Domain
         private OrderClientInformation _clientInformation;
         private List<AdditionalCost>? _additionalCosts;
         private OrderTotalCost _totalCost;
+        private OrderTotalDistance _totalDistance;
 
         private Order(OrderId orderId) : base(orderId)
         {
@@ -45,6 +47,7 @@ namespace Order.Domain
         public OrderClientInformation GetOrderClientInformation() => _clientInformation;
         public List<AdditionalCost>? GetAdditionalCosts() => _additionalCosts;
         public OrderTotalCost GetOrderTotalCost() => _totalCost;
+        public OrderTotalDistance GetOrderTotalDistance() => _totalDistance;
 
         public static Order Create(
             OrderId id,
@@ -56,6 +59,7 @@ namespace Order.Domain
             OrderDetails details,
             OrderClientInformation clientInformation,
             OrderTotalCost totalCost,
+            OrderTotalDistance totalDistance,
             List<AdditionalCost>? additionalCosts,
             bool fromPersistence = false
             )
@@ -73,6 +77,7 @@ namespace Order.Domain
                     _details = details,
                     _clientInformation = clientInformation,
                     _totalCost = totalCost,
+                    _totalDistance = totalDistance,
                     _additionalCosts = additionalCosts
                 };
             }
@@ -88,7 +93,8 @@ namespace Order.Domain
                     issuer,
                     details,
                     clientInformation,
-                    totalCost
+                    totalCost,
+                    totalDistance
                 )
             );
 
@@ -110,6 +116,15 @@ namespace Order.Domain
             Apply(OrderDestinationLocationUpdated.CreateEvent(Id, destinationLocation));
         }
 
+        public void UpdateOrderTotalCost(OrderTotalCost totalCost)
+        {
+            Apply(OrderTotalCostUpdated.CreateEvent(Id, totalCost));
+        }
+
+        public void UpdateOrderTotalDistance(OrderTotalDistance totalDistance)
+        {
+            Apply(OrderTotalDistanceUpdated.CreateEvent(Id, totalDistance));
+        }
         private void OnOrderCreatedEvent(OrderCreated context)
         {
             _status = new OrderStatus(context.Status);
@@ -121,6 +136,7 @@ namespace Order.Domain
             _clientInformation = new OrderClientInformation
                 (context.Name, context.Image, context.PolicyId, context.PhoneNumber, context.IdentificationNumber);
             _totalCost = new OrderTotalCost(context.TotalCost);
+            _totalDistance = new OrderTotalDistance(context.TotalDistance);
             _additionalCosts = context.AdditionalCosts;
         }
 
@@ -137,6 +153,16 @@ namespace Order.Domain
         private void OnOrderDestinationLocationUpdatedEvent(OrderDestinationLocationUpdated context)
         {
             _destinationLocation = new OrderDestinationLocation(context.DestinationLocation);
+        }
+
+        private void OnOrderTotalCostUpdatedEvent(OrderTotalCostUpdated context)
+        {
+            _totalCost = new OrderTotalCost(context.TotalCost);
+        }
+
+        private void OnOrderTotalDistanceUpdatedEvent(OrderTotalDistanceUpdated context)
+        {
+            _totalDistance = new OrderTotalDistance(context.TotalDistance);
         }
 
         public void CreateAdditionalCost(

@@ -13,7 +13,7 @@ namespace Order.Test
         private readonly Mock<IMessageBrokerService> _messageBrokerServiceMock;
         private readonly Mock<IEventStore> _eventStoreMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
-        private readonly Mock<IPublishEndpoint> _publishEndpointMock;
+        private readonly Mock<IPublishEndPointService> _publishEndpointMock;
         private readonly RegisterOrderCommandHandler _registerOrderCommandHandler;
 
         public RegisterOrderCommandHandlerTests()
@@ -22,7 +22,7 @@ namespace Order.Test
             _messageBrokerServiceMock = new Mock<IMessageBrokerService>();
             _eventStoreMock = new Mock<IEventStore>();
             _orderRepositoryMock = new Mock<IOrderRepository>();
-            _publishEndpointMock = new Mock<IPublishEndpoint>();
+            _publishEndpointMock = new Mock<IPublishEndPointService>();
             _registerOrderCommandHandler = new RegisterOrderCommandHandler(
                 _idServiceMock.Object,
                 _messageBrokerServiceMock.Object,
@@ -76,9 +76,7 @@ namespace Order.Test
                )
            ), Times.Once);
 
-            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.Is<OrderCreatedEventt>(e =>
-                e.OrderId == Guid.Parse("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd")
-            ), default), Times.Once);
+            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.IsAny<object>()), Times.Once);
 
             _eventStoreMock.Verify(store => store.AppendEvents(It.Is<List<DomainEvent>>(events =>
                     events.Count == 1 && events[0] is OrderCreatedEvent

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text;
+using System.Text.Json.Nodes;
 using RestSharp;
 
 namespace Application.Core
@@ -27,48 +28,62 @@ namespace Application.Core
         public async Task<JsonNode> FindNearestTow(Dictionary<string, string> towAddresses, string origin)
         {
             var client = new RestClient(_client!);
-            var originCoordinates = await FindCoordinates(origin);
-            var towLocations = new JsonArray();
-
-            foreach (var tow in towAddresses)
+            var originTask = FindCoordinates(origin);
+            var towLocationTasks = towAddresses.Select(async tow => 
             {
                 var coordinates = await FindCoordinates(tow.Value);
-                var location = new JsonObject
+                return new JsonObject
                 {
                     ["TowDriverId"] = tow.Key,
                     ["Latitude"] = coordinates["lat"]?.GetValue<double>(),
                     ["Longitude"] = coordinates["lng"]?.GetValue<double>(),
                     ["Address"] = tow.Value
                 };
-
-                towLocations.Add(location);
+            });
+            
+            var originCoordinates = await originTask;
+            var towLocations = new JsonArray(await Task.WhenAll(towLocationTasks));
+            
+            var destinationsBuilder = new StringBuilder();
+            foreach (var location in towLocations.AsArray())
+            {
+                if (destinationsBuilder.Length > 0)
+                    destinationsBuilder.Append('|');
+                destinationsBuilder.Append(location["Latitude"]).Append(',').Append(location["Longitude"]);
             }
-
-            var destinations = string.Join("|", towLocations.Select(c =>
-                $"{c["Latitude"]},{c["Longitude"]}"));
+            
             var originLatLng = $"{originCoordinates["lat"]},{originCoordinates["lng"]}";
-
+            
             var request = new RestRequest("maps/api/distancematrix/json", Method.Get)
                 .AddParameter("origins", originLatLng)
-                .AddParameter("destinations", destinations)
+                .AddParameter("destinations", destinationsBuilder.ToString())
                 .AddParameter("key", _apiKey);
 
             var response = await client.ExecuteAsync(request);
-            if (!response.IsSuccessful) throw new Exception("Error while retrieving distances.");
+            if (!response.IsSuccessful) 
+                throw new HttpRequestException($"Error retrieving distances: {response.StatusCode}");
 
             var distanceMatrixJson = JsonNode.Parse(response.Content!);
             var elements = distanceMatrixJson?["rows"]?[0]?["elements"];
 
-            for (var i = 0; i < elements?.AsArray().Count; i++)
+            if (elements == null)
+                throw new InvalidOperationException("Invalid response format from distance matrix API");
+            var locations = new List<JsonNode>(towLocations);
+            for (var i = 0; i < elements.AsArray().Count; i++)
             {
-                towLocations[i]["Distance"] = elements[i]?["distance"]?["value"]?.GetValue<double>();
-                towLocations[i]["EstimatedTimeOfArrival"] = elements[i]?["duration"]?["text"]?.ToString();
+                var element = elements[i];
+                locations[i]!["Distance"] = element?["distance"]?["value"]?.GetValue<double>();
+                locations[i]!["EstimatedTimeOfArrival"] = element?["duration"]?["text"]?.ToString();
             }
-
+            
             return new JsonObject
             {
                 ["Origin"] = originLatLng,
-                ["TowLocations"] = towLocations
+                ["TowLocations"] = new JsonArray(
+                    locations.OrderBy(loc => loc!["Distance"]?.GetValue<double>())
+                        .Select(loc => loc!.DeepClone()) 
+                        .ToArray()
+                )
             };
         }
         public async Task<JsonNode> FindShortestRoute(string origin, string destination)
@@ -99,10 +114,11 @@ namespace Application.Core
                 ["Duration"] = route["duration"]?["text"]?.ToString(),
                 ["StartAddress"] = route["start_address"]?.ToString(),
                 ["EndAddress"] = route["end_address"]?.ToString(),
-                ["Steps"] = route["steps"]
+                ["Steps"] = JsonNode.Parse(route["steps"]?.ToJsonString() ?? "[]") // Clonar el nodo steps
             };
 
             return shortestRoute;
         }
+        
     }
 }

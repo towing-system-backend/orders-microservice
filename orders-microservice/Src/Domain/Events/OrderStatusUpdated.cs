@@ -2,7 +2,8 @@
 
 namespace Order.Domain
 {
-    public class OrderStatusUpdatedEvent(string publisherId, string type, OrderStatusUpdated context) : DomainEvent(publisherId, type, context) { }
+    public class OrderStatusUpdatedEvent(string publisherId, string type, OrderStatusUpdated context) 
+        : DomainEvent(publisherId, type, context) { }
 
     public class OrderStatusUpdated(string status)
     {

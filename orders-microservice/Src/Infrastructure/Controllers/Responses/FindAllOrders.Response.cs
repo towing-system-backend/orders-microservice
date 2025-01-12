@@ -1,11 +1,12 @@
 ﻿namespace Order.Infrastructure
 {
-    public record FindOrderByStatusResponse
+    public record FindAllOrdersResponse
     (
         string Id,
         string Status,
         string IssueLocation,
         string Destination,
+        string Issuer,
         string? TowDriverAssigned,
         string Details,
         string Name,
@@ -14,13 +15,5 @@
         string PhoneNumber,
         decimal TotalCost,
         List<AdditonalCostResponse> AdditionalCosts
-    );
-
-    public record AdditonalCostResponse
-    (
-        string Id,
-        string Name,
-        string Category,
-        decimal? Amount
     );
 }

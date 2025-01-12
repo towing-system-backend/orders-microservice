@@ -12,7 +12,8 @@ namespace Order.Domain
             { 
                 _value = value; 
             } 
-            else if (GuidEx.IsGuid(value))
+            
+            if (GuidEx.IsGuid(value))
             {
                 _value = value;
             }

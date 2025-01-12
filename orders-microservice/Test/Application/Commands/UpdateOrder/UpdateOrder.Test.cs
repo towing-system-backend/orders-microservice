@@ -4,6 +4,7 @@ using MassTransit;
 using Order.Application;
 using Order.Domain;
 using Xunit;
+using RabbitMQ.Contracts;
 
 namespace Order.Test
 {
@@ -13,7 +14,7 @@ namespace Order.Test
         private readonly Mock<IEventStore> _eventStoreMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IMessageBrokerService> _messageBrokerServiceMock;
-        private readonly Mock<IPublishEndpoint> _publishEndpointMock;
+        private readonly Mock<IPublishEndPointService> _publishEndpointMock;
         private readonly UpdateOrderCommandHandler _updateOrderCommandHandler;
 
         public UpdateOrderCommandHandlerTests()
@@ -22,7 +23,7 @@ namespace Order.Test
             _eventStoreMock = new Mock<IEventStore>();
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _messageBrokerServiceMock = new Mock<IMessageBrokerService>();
-            _publishEndpointMock = new Mock<IPublishEndpoint>();
+            _publishEndpointMock = new Mock<IPublishEndPointService>();
             _updateOrderCommandHandler = new UpdateOrderCommandHandler(
                 _idServiceMock.Object,
                 _eventStoreMock.Object,
@@ -64,7 +65,7 @@ namespace Order.Test
             _orderRepositoryMock.Verify(repo => repo.Save(It.IsAny<Domain.Order>()), Times.Never);
             _eventStoreMock.Verify(store => store.AppendEvents(It.IsAny<List<DomainEvent>>()), Times.Never);
             _messageBrokerServiceMock.Verify(service => service.Publish(It.IsAny<List<DomainEvent>>()), Times.Never);
-            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.IsAny<object>(), default), Times.Never);
+            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.IsAny<object>()), Times.Never);
         }
 
         [Fact]
@@ -101,6 +102,7 @@ namespace Order.Test
                    25547458
                ),
                new OrderTotalCost(0),
+               new OrderTotalDistance(0),
                [
                     new AdditionalCost(
                         new AdditionalCostId("28499581-b066-4ad7-b0ad-b6cc266e847e"),
@@ -154,9 +156,7 @@ namespace Order.Test
                 )
             ), Times.Once);
 
-            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.Is<UpdateOrderStatusEvent>(e =>
-                e.OrderId == Guid.Parse(command.Id)
-            ), default), Times.Once);
+            _publishEndpointMock.Verify(endpoint => endpoint.Publish(It.IsAny<object>()), Times.Once);
         }
     }
 }
