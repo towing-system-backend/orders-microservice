@@ -115,6 +115,7 @@ namespace Order.Domain
             _status = new OrderStatus(context.Status);
             _issueLocation = new OrderIssueLocation(context.IssueLocation);
             _destinationLocation = new OrderDestinationLocation(context.Destination);
+            _towDriverAssigned = new OrderTowDriverAssigned(context.TowDriverAssigned);
             _issuer = new OrderIssuer(context.Issuer);
             _details = new OrderDetails(context.Details);
             _clientInformation = new OrderClientInformation

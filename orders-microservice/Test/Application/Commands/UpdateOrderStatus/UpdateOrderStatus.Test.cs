@@ -33,7 +33,7 @@ namespace Order.Test
         public async Task Should_Not_Update_Order_Status_When_Order_Not_Found()
         {
             // Arrange
-            var command = new UpdateOrderStatusCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "Inactive");
+            var command = new UpdateOrderStatusCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "Paid");
 
             _orderRepositoryMock.Setup(repo => repo.FindById(command.Id))
                 .ReturnsAsync(Optional<Domain.Order>.Empty());
@@ -56,20 +56,22 @@ namespace Order.Test
         public async Task Should_Update_Order()
         {
             // Arrange
-            var command = new UpdateOrderStatusCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "Inactive");
+            var command = new UpdateOrderStatusCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "Paid");
 
             var order = Domain.Order.Create(
                new OrderId("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd"),
-               new OrderStatus("Active"),
+               new OrderStatus("Completed"),
                new OrderIssueLocation("Centro Comercial Tolon"),
                new OrderDestinationLocation("El Paraiso"),
                new OrderTowDriverAssigned("Not assigned"),
+               new OrderIssuer("424fe2a9-f91e-4925-8d59-3b16b45cd753"),
                new OrderDetails("Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2."),
                new OrderClientInformation(
                    "Juan Hernandez",
                    "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
                    "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
-                   "04146577845"
+                   "04146577845",
+                   25547458
                ),
                new OrderTotalCost(0),
                [
@@ -95,7 +97,7 @@ namespace Order.Test
 
             _orderRepositoryMock.Verify(repo => repo.Save(It.Is<Domain.Order>(o =>
                 o.GetOrderId().GetValue() == command.Id &&
-                o.GetOrderStatus().GetValue() == "Inactive"
+                o.GetOrderStatus().GetValue() == "Paid"
             )), Times.Once);
 
             _eventStoreMock.Verify(store => store.AppendEvents(It.Is<List<DomainEvent>>(events =>

@@ -38,7 +38,7 @@ namespace Order.Test
             // Arrange
             var command = new UpdateOrderCommand(
                 "cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd",
-                "Active",
+                "Completed",
                 "b0458aef-64b8-4528-bb8e-938c59c485d3",
                 "El Paraiso",
                 [
@@ -73,9 +73,9 @@ namespace Order.Test
             // Arrange
             var command = new UpdateOrderCommand(
                 "cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd",
-                "Active",
+                "Completed",
                 "b0458aef-64b8-4528-bb8e-938c59c485d3",
-                "El Paraiso",
+                "Las Mercedes",
                 [
                     new AdditionalCostCommand(
                         "Cambio de caucho",
@@ -87,16 +87,18 @@ namespace Order.Test
 
             var order = Domain.Order.Create(
                new OrderId("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd"),
-               new OrderStatus("Active"),
+               new OrderStatus("ToAssign"),
                new OrderIssueLocation("Centro Comercial Tolon"),
                new OrderDestinationLocation("El Paraiso"),
                new OrderTowDriverAssigned("Not assigned"),
+               new OrderIssuer("424fe2a9-f91e-4925-8d59-3b16b45cd753"),
                new OrderDetails("Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2."),
                new OrderClientInformation(
                    "Juan Hernandez",
                    "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
                    "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
-                   "04146577845"
+                   "04146577845",
+                   25547458
                ),
                new OrderTotalCost(0),
                [
@@ -125,7 +127,12 @@ namespace Order.Test
 
             _orderRepositoryMock.Verify(repo => repo.Save(It.Is<Domain.Order>(o =>
                     o.GetOrderId().GetValue() == command.Id &&
-                    o.GetOrderStatus().GetValue() == "Active"
+                    o.GetOrderStatus().GetValue() == command.Status &&
+                    o.GetOrderDestinationLocation().GetValue() == command.Destination &&
+                    o.GetOrderTowDriverAssigned().GetValue() == command.TowDriverAssigned &&
+                    o.GetAdditionalCosts()!.Any(x => x.GetAdditionalCostName().GetValue() == command.AdditionalCosts[0].Name) &&
+                    o.GetAdditionalCosts()!.Any(x => x.GetAdditionalCostCategory().GetValue() == command.AdditionalCosts[0].Category) &&
+                    o.GetAdditionalCosts()!.Any(x => x.GetAdditionalCostAmount().GetValue() == command.AdditionalCosts[0].Amount)
                 )
             ), Times.Once);
 

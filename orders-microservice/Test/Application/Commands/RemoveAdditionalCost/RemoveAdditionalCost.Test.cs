@@ -32,7 +32,7 @@ namespace Order.Test
             var command = new RemoveAdditionalCostCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "8b22f5a5-c39a-41e9-b769-cdf23d0d5192");
 
             _orderRepositoryMock.Setup(repo => repo.FindById(command.OrderId))
-                .ReturnsAsync(Optional<Domain.Order>.Empty);
+                .ReturnsAsync(Optional<Domain.Order>.Empty());
 
             // Act
             var result = await _removeAdditionalCostCommandHandler.Execute(command);
@@ -54,21 +54,30 @@ namespace Order.Test
             var command = new RemoveAdditionalCostCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "8b22f5a5-c39a-41e9-b769-cdf23d0d5192");
 
             var order = Domain.Order.Create(
-                new OrderId(command.OrderId),
-                new OrderStatus("Active"),
-                new OrderIssueLocation("Centro Comercial Tolon"),
-                new OrderDestinationLocation("El Paraiso"),
-                new OrderTowDriverAssigned("Not assigned"),
-                new OrderDetails("Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2."),
-                new OrderClientInformation(
-                    "Juan Hernandez",
-                    "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
-                    "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
-                    "04146577845"
-                ),
-                new OrderTotalCost(0),
-                new List<AdditionalCost>(),
-                true
+               new OrderId("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd"),
+               new OrderStatus("ToAssign"),
+               new OrderIssueLocation("Centro Comercial Tolon"),
+               new OrderDestinationLocation("El Paraiso"),
+               new OrderTowDriverAssigned("Not assigned"),
+               new OrderIssuer("424fe2a9-f91e-4925-8d59-3b16b45cd753"),
+               new OrderDetails("Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2."),
+               new OrderClientInformation(
+                   "Juan Hernandez",
+                   "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
+                   "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
+                   "04146577845",
+                   25547458
+               ),
+               new OrderTotalCost(0),
+               [
+                    new AdditionalCost(
+                        new AdditionalCostId("28499581-b066-4ad7-b0ad-b6cc266e847e"),
+                        new AdditionalCostAmount(1004),
+                        new AdditionalCostName("Estacionamiento"),
+                        new AdditionalCostCategory("Especial")
+                    )
+               ],
+               true
             );
 
             _orderRepositoryMock.Setup(repo => repo.FindById(command.OrderId))
@@ -94,17 +103,19 @@ namespace Order.Test
             var command = new RemoveAdditionalCostCommand("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd", "62a25158-b2c5-4566-8167-4b51e14b7d61");
 
             var order = Domain.Order.Create(
-               new OrderId(command.OrderId),
-               new OrderStatus("Active"),
+               new OrderId("cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd"),
+               new OrderStatus("ToAssign"),
                new OrderIssueLocation("Centro Comercial Tolon"),
                new OrderDestinationLocation("El Paraiso"),
                new OrderTowDriverAssigned("Not assigned"),
+               new OrderIssuer("424fe2a9-f91e-4925-8d59-3b16b45cd753"),
                new OrderDetails("Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2."),
                new OrderClientInformation(
                    "Juan Hernandez",
                    "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
                    "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
-                   "04146577845"
+                   "04146577845",
+                   25547458
                ),
                new OrderTotalCost(0),
                [
@@ -133,22 +144,22 @@ namespace Order.Test
             Assert.Equal(command.OrderId, result.Unwrap().OrderId);
 
             _orderRepositoryMock.Verify(repo => repo.Save(It.Is<Domain.Order>(o =>
-                        o.GetOrderId().GetValue() == command.OrderId &&
-                        !o.GetAdditionalCosts().Any(x => x.GetAdditionalCostId().GetValue() == command.AdditionalCostId)
-                    )
-                ), Times.Once);
+                    o.GetOrderId().GetValue() == command.OrderId &&
+                    !o.GetAdditionalCosts().Any(x => x.GetAdditionalCostId().GetValue() == command.AdditionalCostId)
+                )
+            ), Times.Once);
 
             _eventStoreMock.Verify(store => store.AppendEvents(It.Is<List<DomainEvent>>(events => 
-                        events.Count == 1 &&
-                        events.Any(e => e is AdditionalCostRemovedEvent)
-                    )
-                ), Times.Once);
+                    events.Count == 1 &&
+                    events.Any(e => e is AdditionalCostRemovedEvent)
+                )
+            ), Times.Once);
             
             _messageBrokerServiceMock.Verify(service => service.Publish(It.Is<List<DomainEvent>>(events =>
-                        events.Count == 1 &&
-                        events.Any(e => e is AdditionalCostRemovedEvent)
-                    )
-                ), Times.Once);
+                    events.Count == 1 &&
+                    events.Any(e => e is AdditionalCostRemovedEvent)
+                )
+            ), Times.Once);
         }
     }
 }

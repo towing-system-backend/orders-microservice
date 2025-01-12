@@ -6,6 +6,7 @@ using Order.Domain;
 using Order.Application; 
 using orders_microservice.Utils.Core.Src.Application.NotificationService;
 using orders_microservice.Src.Infrastructure.Queries.TowDrivers;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Order.Infrastructure
@@ -37,6 +38,7 @@ namespace Order.Infrastructure
         private readonly IPerformanceLogsRepository _performanceLogsRepository = performanceLogsRepository;
 
         [HttpPost("create")]
+        [Authorize(Roles ="Admin, CabinOperator")]
         public async Task<ObjectResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)
         {
             var command = new RegisterOrderCommand(
@@ -72,6 +74,7 @@ namespace Order.Infrastructure
         }
 
         [HttpPatch("update")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> UpdateOrder([FromBody] UpdateOrderDto updateOrderDto)
         {
             var command = new UpdateOrderCommand(
@@ -109,6 +112,7 @@ namespace Order.Infrastructure
         }
 
         [HttpPatch("update/status")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> UpdateOrderByStatus([FromBody] UpdateOrderStatusDto updateOrderStatusDto)
         {
             var command = new UpdateOrderStatusCommand(
@@ -135,6 +139,7 @@ namespace Order.Infrastructure
         }
 
         [HttpPatch("assign/tow")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> AssignTowDriver([FromBody] AssignTowDriverDto assignTowDriverDto)
         {
 
@@ -167,6 +172,7 @@ namespace Order.Infrastructure
         }
 
         [HttpGet("find/status/{status}")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> FindOrderByStatus(string status)
         {
             var data = new FindOrderByStatusDto(status);
@@ -176,6 +182,7 @@ namespace Order.Infrastructure
         }
 
         [HttpGet("find/{id}")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<ObjectResult> FindOrderAssigned(string id)
         {
             var data = new FindOrderAssignedDto(id);
@@ -186,6 +193,7 @@ namespace Order.Infrastructure
         
 
         [HttpDelete("delete/additionalcost")]
+        [Authorize(Roles = "Admin, CabinOperator, TowDriver")]
         public async Task<ObjectResult> RemoveAdditionalCost([FromBody] RemoveAdditionalCostDto removeAdditionalCostDto)
         {
             var command = new RemoveAdditionalCostCommand(
@@ -211,6 +219,7 @@ namespace Order.Infrastructure
         }
 
         [HttpPost("send/notification")]
+        [Authorize(Roles = "Admin, CabinOperator")]
         public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
         {
             try

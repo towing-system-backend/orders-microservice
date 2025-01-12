@@ -37,14 +37,16 @@ namespace Order.Test
         {
             // Arrange
             var command = new RegisterOrderCommand(
-                "Active",
+                "ToAssign",
                 "Centro Comercial Tolon",
                 "El Paraiso",
+                "424fe2a9-f91e-4925-8d59-3b16b45cd753",
                 "Esta dentro de un estacionamiento, en el centro comercial Tolon, sotano 2.",
                 "Juan Hernandez",
                 "https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-in-shirt-smiles-and-gives-thumbs-up-to-show-approval-png-image_13146336.png",
                 "1ab5ceae-f0f8-4505-b353-a5470a2318fe",
-                "04146577845"
+                "04146577845",
+                25547458
             );
 
             _idServiceMock.Setup(service => service.GenerateId())
@@ -61,6 +63,7 @@ namespace Order.Test
                    order.GetOrderId().GetValue() == "cf7e4192-dab5-4c86-a0c6-cc8c597f3dbd" &&
                    order.GetOrderStatus().GetValue() == command.Status &&
                    order.GetOrderIssueLocation().GetValue() == command.IssueLocation &&
+                   order.GetOrderIssuer().GetValue() == command.Issuer &&
                    order.GetOrderDestinationLocation().GetValue() == command.Destination &&
                    order.GetOrderTowDriverAssigned().GetValue() == "Not Assigned." &&
                    order.GetOrderDetails().GetValue() == command.Details &&
@@ -68,6 +71,7 @@ namespace Order.Test
                    order.GetOrderClientInformation().GetClientImage() == command.Image &&
                    order.GetOrderClientInformation().GetClientPolicyId() == command.Policy &&
                    order.GetOrderClientInformation().GetClientPhoneNumber() == command.PhoneNumber &&
+                   order.GetOrderClientInformation().GetClientIdentificationNumber() == command.IdentificationNumber &&
                    order.GetOrderTotalCost().GetValue() == 0
                )
            ), Times.Once);
