@@ -1,10 +1,10 @@
 ﻿namespace Application.Core
 {
-    public class OrderCreatedEventt
+    public class EventOrderCreated
     {
         public Guid OrderId { get; }
         public DateTime? CreatedAt { get; set; }
-        public OrderCreatedEventt(Guid orderId)
+        public EventOrderCreated(Guid orderId)
         {
             OrderId = orderId;
         }

@@ -31,6 +31,7 @@ namespace Order.Infrastructure
                 .Set(mongoOrder => mongoOrder.PhoneNumber, order.GetOrderClientInformation().GetClientPhoneNumber())
                 .Set(mongoOrder => mongoOrder.IdentificationNumber, order.GetOrderClientInformation().GetClientIdentificationNumber())
                 .Set(mongoOrder => mongoOrder.TotalCost, order.GetOrderTotalCost().GetValue())
+                .Set(mongoOrder => mongoOrder.TotalDistance, order.GetOrderTotalDistance().GetValue())
                 .Set(mongoOrder => mongoOrder.AdditionalCosts, order.GetAdditionalCosts()?.Select(cost => new MongoAdditionalCost(
                         cost.GetAdditionalCostId().GetValue(),
                         cost.GetAdditionalCostName().GetValue(),
@@ -59,6 +60,7 @@ namespace Order.Infrastructure
                     new OrderClientInformation
                         (res.Name, res.Image, res.PolicyId, res.PhoneNumber, res.IdentificationNumber),
                     new OrderTotalCost(res.TotalCost),
+                    new OrderTotalDistance(res.TotalDistance),
                     res.AdditionalCosts?.Select(ac => new AdditionalCost(
                         new AdditionalCostId(ac.AdditionalCostId),
                         new AdditionalCostAmount(ac.Amount),

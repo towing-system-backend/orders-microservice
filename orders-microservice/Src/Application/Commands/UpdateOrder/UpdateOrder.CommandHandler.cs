@@ -26,13 +26,13 @@ namespace Order.Application
             if (command.Status != null && command.Status != "Cancelled")
             {
                 order.UpdateOrderStatus(new OrderStatus(command.Status));
-                await _publishEndpoint.Publish(new UpdateOrderStatusEvent(Guid.Parse(order.GetOrderId().GetValue())));
+                await _publishEndpoint.Publish(new EventUpdateOrderStatus(Guid.Parse(order.GetOrderId().GetValue())));
             }
 
             if (command.Status != null && command.Status == "Cancelled")
             {
                 order.UpdateOrderStatus(new OrderStatus(command.Status));
-                await _publishEndpoint.Publish(new OrderCancelledEvent(Guid.Parse(order.GetOrderId().GetValue())));
+                await _publishEndpoint.Publish(new EventOrderCancelled(Guid.Parse(order.GetOrderId().GetValue())));
             }
 
             if (command.TowDriverAssigned != null) order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(command.TowDriverAssigned));
@@ -49,9 +49,13 @@ namespace Order.Application
                 }
 
             var events = order.PullEvents();
-            await _orderRepository.Save(order);
-            await _eventStore.AppendEvents(events);
-            await _messageBrokerService.Publish(events);
+            await Task.WhenAll
+            (
+                _orderRepository.Save(order),
+                _eventStore.AppendEvents(events),
+                _messageBrokerService.Publish(events)
+            );
+
             return Result<UpdateOrderResponse>.MakeSuccess(new UpdateOrderResponse(command.Id));
         }
     }

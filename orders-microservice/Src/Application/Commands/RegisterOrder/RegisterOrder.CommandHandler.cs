@@ -31,14 +31,17 @@ namespace Order.Application
                 new OrderClientInformation
                     (command.Name, command.Image, command.Policy, command.PhoneNumber, command.IdentificationNumber),
                 new OrderTotalCost(0),
+                new OrderTotalDistance(0),
                 null
             );
-
             var events = order.PullEvents();
-            await _publishEndpoint.Publish(new OrderCreatedEventt(Guid.Parse(id)));
-            await _orderRepository.Save(order);
-            await _eventStore.AppendEvents(events);
-            await _messageBrokerService.Publish(events);
+            await Task.WhenAll
+            (
+                _publishEndpoint.Publish(new EventOrderCreated(Guid.Parse(id))),
+                _orderRepository.Save(order),
+                _eventStore.AppendEvents(events),
+                _messageBrokerService.Publish(events)
+            );
 
             return Result<RegisterOrderResponse>.MakeSuccess(new RegisterOrderResponse(id));
         }

@@ -12,10 +12,10 @@ namespace Application.Core
         public State? Completed { get; private set; }
         public State? Paid { get; private set; }
         public State? InProgress { get; private set; }
-        public Event<OrderCreatedEventt>? OrderCreated { get; private set; }
-        public Event<UpdateOrderStatusEvent>? OrderUpdated { get; private set; }
-        public Event<OrderCancelledEvent>? OrderCancelled { get; private set; }
-        public Event<OrderRejectedEvent>? OrderRejected { get; private set; }
+        public Event<EventOrderCreated>? OrderCreated { get; private set; }
+        public Event<EventUpdateOrderStatus>? OrderUpdated { get; private set; }
+        public Event<EventOrderCancelled>? OrderCancelled { get; private set; }
+        public Event<EventOrderRejected>? OrderRejected { get; private set; }
 
 
         public OrderStateMachine()

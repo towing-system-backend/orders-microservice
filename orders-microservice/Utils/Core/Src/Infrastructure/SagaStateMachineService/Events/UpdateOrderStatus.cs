@@ -1,11 +1,11 @@
 ﻿namespace Application.Core
 {
-    public class UpdateOrderStatusEvent
+    public class EventUpdateOrderStatus
     {
         public Guid OrderId { get; }
         public DateTime? UpdatedAt { get; set; }
 
-        public UpdateOrderStatusEvent(Guid orderId)
+        public EventUpdateOrderStatus(Guid orderId)
         {
             OrderId = orderId;
         }

@@ -22,8 +22,6 @@ FirebaseApp.Create(new AppOptions()
     Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("FIREBASE-SERVICES"))
 });
 
-
-//builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MongoEventStore>();
 builder.Services.AddSingleton<INotificationService, FirebaseNotificationsService>();
 builder.Services.AddScoped<IEventStore, MongoEventStore>();
@@ -34,6 +32,7 @@ builder.Services.AddScoped<ILocationService<JsonNode>, GoogleMapService>();
 builder.Services.AddScoped<ISagaStateMachineService<string>, SagaStateMachineRepository>();
 builder.Services.AddScoped<Logger, DotNetLogger>();
 builder.Services.AddScoped<IPerformanceLogsRepository, MongoPerformanceLogsRespository>();
+builder.Services.AddScoped<OrderController>();
 builder.Services.AddControllers(options => {
     options.Filters.Add<GlobalExceptionFilter>();
 });
@@ -62,6 +61,12 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+     options.ListenAnyIP(5000); 
+});
+
 builder.Services.AddControllers();
 
 builder.Services.AddMassTransit(busConfigurator =>
@@ -89,6 +94,7 @@ builder.Services.AddMassTransit(busConfigurator =>
             .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
     });
 
+    busConfigurator.AddConsumer<OrderRejectedConsumer>();
     busConfigurator.SetKebabCaseEndpointNameFormatter();
     busConfigurator.UsingRabbitMq((context, configurator) =>
     {
@@ -111,14 +117,15 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseRouting();
-app.UseAuthorization();
-app.UseSwagger(c =>
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    c.SerializeAsV2 = true;
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Job v1");
+    c.RoutePrefix = string.Empty;
 });
+app.UseRouting();
+app.UseHttpsRedirection();
+app.UseAuthorization();
 
 app.UseSwaggerUI(c =>
 {

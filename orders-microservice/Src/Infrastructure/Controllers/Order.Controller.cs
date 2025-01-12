@@ -5,7 +5,8 @@ using System.Text.Json.Nodes;
 using Order.Domain;
 using Order.Application; 
 using orders_microservice.Utils.Core.Src.Application.NotificationService;
-using orders_microservice.Src.Infrastructure.Queries.TowDrivers;
+
+
 
 
 namespace Order.Infrastructure
@@ -137,13 +138,15 @@ namespace Order.Infrastructure
         [HttpPatch("assign/tow")]
         public async Task<ObjectResult> AssignTowDriver([FromBody] AssignTowDriverDto assignTowDriverDto)
         {
-
-            var query = new FindTowDriverByStatusQuery();
-            var towDrivers = await query.Execute();
-
+            var locationQuery = new FindTowDriverByStatusQuery();
+            var result = await locationQuery.Execute();
+            var towDrivers = result.Unwrap();
+            var devicesQuery = new FindTowDriversDeviceTokenQuery();
+            var devicesId = await devicesQuery.Execute(towDrivers);
             var command = new AssignTowDriverCommand(
                 assignTowDriverDto.OrderId,
-                towDrivers.Unwrap()
+                towDrivers.ToDictionary(towDriver => towDriver.TowDriverId, towDriver => towDriver.Location!),
+                devicesId.Unwrap()
             );
 
             var handler =
@@ -156,14 +159,73 @@ namespace Order.Infrastructure
                                 _publishEndpoint,
                                 _messageBrokerService,
                                 _locationService,
-                                _sagaStateMachineService
+                                _sagaStateMachineService,
+                                _notificationService
                             ), _logger
                         ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
                     ), ExceptionParser.Parse
                 );
             var res = await handler.Execute(command);
+            return Ok(res.Unwrap()); 
+        }
 
-             return Ok(res.Unwrap()); 
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpPatch("driver/response")]
+        public async Task<ObjectResult> DriverResponse([FromBody] TowDriverResponseDto towDriverResponseDto)
+        {
+            var command = new TowDriverResponseCommand(
+                towDriverResponseDto.OrderId,
+                towDriverResponseDto.Status,
+                towDriverResponseDto.Response
+            );
+
+            var handler =
+              new ExceptionCatcher<TowDriverResponseCommand, TowDriverResponseResponse>(
+                  new PerfomanceMonitor<TowDriverResponseCommand, TowDriverResponseResponse>(
+                      new LoggingAspect<TowDriverResponseCommand, TowDriverResponseResponse>(
+                          new TowDriverResponseCommandHandler(
+                              _eventStore,
+                              _orderRepository,
+                              _publishEndpoint,
+                              _messageBrokerService,
+                              _notificationService
+                          ), _logger
+                      ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
+                  ), ExceptionParser.Parse
+              );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
+        }
+
+        [HttpPatch("calculate/total")]
+        public async Task<ObjectResult> CalculateOrderTotalCost([FromBody] CalculateOrderTotalCostDto calculateOrderTotalCostDto) 
+        {
+            Console.WriteLine("Holaa1");
+            var query = new FindClientPolicyQuery();
+            var result = await query.Execute(calculateOrderTotalCostDto.OrderId);
+            var clientPolicy = result.Unwrap();
+            Console.WriteLine("Holaa1");
+            var command = new CalculateOrderTotalCostCommand(
+                calculateOrderTotalCostDto.OrderId,
+                clientPolicy.coverageAmount,
+                0
+            );
+
+            var handler =
+                new ExceptionCatcher<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                    new PerfomanceMonitor<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                        new LoggingAspect<CalculateOrderTotalCostCommand, CalculateOrderTotalCostResponse>(
+                            new CalculateOrderTotalCostCommandHandler(
+                                _eventStore,
+                                _orderRepository,
+                                _messageBrokerService,
+                                _locationService
+                            ), _logger
+                        ), _logger, _performanceLogsRepository, nameof(AssignTowDriverCommandHandler), "Write"
+                    ), ExceptionParser.Parse
+                );
+            var res = await handler.Execute(command);
+            return Ok(res.Unwrap());
         }
 
         [HttpGet("find/status/{status}")]
@@ -210,18 +272,6 @@ namespace Order.Infrastructure
             return Ok(res.Unwrap());
         }
 
-        [HttpPost("send/notification")]
-        public async Task<IActionResult> SendNotification(string deviceToken, string title, string body)
-        {
-            try
-            {
-                await _notificationService.SendNotification(deviceToken, title, body);
-                return Ok("Notification sent successfully.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error sending notification: {ex.Message}");
-            }
-        }
+
     }
 }

@@ -14,7 +14,8 @@ namespace Order.Domain
         string policyId,
         string phoneNumber,
         int identificationNumber,
-        decimal totalCost
+        decimal totalCost,
+        double totalDistance
         )
     {
         public readonly string Status = status;
@@ -28,6 +29,7 @@ namespace Order.Domain
         public readonly string PhoneNumber = phoneNumber;
         public readonly int IdentificationNumber = identificationNumber;
         public readonly decimal TotalCost = totalCost;
+        public readonly double TotalDistance = totalDistance;
         public readonly List<AdditionalCost>? AdditionalCosts = new();
 
         public static OrderCreatedEvent CreateEvent(
@@ -38,7 +40,8 @@ namespace Order.Domain
             OrderIssuer issuer,
             OrderDetails details,
             OrderClientInformation clientInformation,
-            OrderTotalCost totalCost
+            OrderTotalCost totalCost,
+            OrderTotalDistance totalDistance
         )
         {
             return new OrderCreatedEvent(
@@ -55,7 +58,8 @@ namespace Order.Domain
                     clientInformation.GetClientPolicyId(),
                     clientInformation.GetClientPhoneNumber(),
                     clientInformation.GetClientIdentificationNumber(),
-                    totalCost.GetValue()
+                    totalCost.GetValue(),
+                    totalDistance.GetValue()
                 )
             );
         }

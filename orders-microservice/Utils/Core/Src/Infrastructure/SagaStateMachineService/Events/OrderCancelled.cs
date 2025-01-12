@@ -1,11 +1,11 @@
 ﻿namespace Application.Core
 {
-    public class OrderCancelledEvent
+    public class EventOrderCancelled
     {
         public Guid OrderId { get; }
         public DateTime CancelledAt { get; set; }
 
-        public OrderCancelledEvent(Guid orderId)
+        public EventOrderCancelled(Guid orderId)
         {
             OrderId = orderId;
         }

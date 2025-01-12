@@ -1,10 +1,11 @@
 ﻿using Application.Core;
+using orders_microservice.Src.Domain.Events;
 
 namespace Order.Domain
 {
     public class Order : AggregateRoot<OrderId>
     {
-        private new OrderId _id;
+        private new OrderId Id;
         private OrderStatus _status;
         private OrderIssueLocation _issueLocation;
         private OrderDestinationLocation _destinationLocation;
@@ -14,15 +15,16 @@ namespace Order.Domain
         private OrderClientInformation _clientInformation;
         private List<AdditionalCost>? _additionalCosts;
         private OrderTotalCost _totalCost;
+        private OrderTotalDistance _totalDistance;
 
         private Order(OrderId orderId) : base(orderId)
         {
-            _id = orderId;
+            Id = orderId;
         }
 
         public override void ValidateState()
         {
-            if (_id == null ||
+            if (Id == null ||
                 _status == null ||
                 _issueLocation == null ||
                 _destinationLocation == null ||
@@ -35,7 +37,7 @@ namespace Order.Domain
             }
         }
 
-        public OrderId GetOrderId() => _id;
+        public OrderId GetOrderId() => Id;
         public OrderStatus GetOrderStatus() => _status;
         public OrderIssueLocation GetOrderIssueLocation() => _issueLocation;
         public OrderDestinationLocation GetOrderDestinationLocation() => _destinationLocation;
@@ -45,6 +47,7 @@ namespace Order.Domain
         public OrderClientInformation GetOrderClientInformation() => _clientInformation;
         public List<AdditionalCost>? GetAdditionalCosts() => _additionalCosts;
         public OrderTotalCost GetOrderTotalCost() => _totalCost;
+        public OrderTotalDistance GetOrderTotalDistance() => _totalDistance;
 
         public static Order Create(
             OrderId id,
@@ -56,6 +59,7 @@ namespace Order.Domain
             OrderDetails details,
             OrderClientInformation clientInformation,
             OrderTotalCost totalCost,
+            OrderTotalDistance totalDistance,
             List<AdditionalCost>? additionalCosts,
             bool fromPersistence = false
             )
@@ -64,7 +68,7 @@ namespace Order.Domain
             {
                 return new Order(id)
                 {
-                    _id = id,
+                    Id = id,
                     _status = status,
                     _issueLocation = issueLocation,
                     _destinationLocation = destinationLocation,
@@ -73,6 +77,7 @@ namespace Order.Domain
                     _details = details,
                     _clientInformation = clientInformation,
                     _totalCost = totalCost,
+                    _totalDistance = totalDistance,
                     _additionalCosts = additionalCosts
                 };
             }
@@ -87,7 +92,8 @@ namespace Order.Domain
                     issuer,
                     details,
                     clientInformation,
-                    totalCost
+                    totalCost,
+                    totalDistance
                 )
             );
 
@@ -96,19 +102,28 @@ namespace Order.Domain
 
         public void UpdateOrderStatus(OrderStatus status)
         {
-            Apply(OrderStatusUpdated.CreateEvent(_id, status));
+            Apply(OrderStatusUpdated.CreateEvent(Id, status));
         }
 
         public void UpdateOrderTowDriverAssigned(OrderTowDriverAssigned towDriver)
         {
-            Apply(OrderTowDriverAssignedUpdated.CreateEvent(_id, towDriver));
+            Apply(OrderTowDriverAssignedUpdated.CreateEvent(Id, towDriver));
         }
 
         public void UpdateOrderDestinationLocation(OrderDestinationLocation destinationLocation)
         {
-            Apply(OrderDestinationLocationUpdated.CreateEvent(_id, destinationLocation));
+            Apply(OrderDestinationLocationUpdated.CreateEvent(Id, destinationLocation));
         }
 
+        public void UpdateOrderTotalCost(OrderTotalCost totalCost)
+        {
+            Apply(OrderTotalCostUpdated.CreateEvent(Id, totalCost));
+        }
+
+        public void UpdateOrderTotalDistance(OrderTotalDistance totalDistance)
+        {
+            Apply(OrderTotalDistanceUpdated.CreateEvent(Id, totalDistance));
+        }
         private void OnOrderCreatedEvent(OrderCreated context)
         {
             _status = new OrderStatus(context.Status);
@@ -119,6 +134,7 @@ namespace Order.Domain
             _clientInformation = new OrderClientInformation
                 (context.Name, context.Image, context.PolicyId, context.PhoneNumber, context.IdentificationNumber);
             _totalCost = new OrderTotalCost(context.TotalCost);
+            _totalDistance = new OrderTotalDistance(context.TotalDistance);
             _additionalCosts = context.AdditionalCosts;
         }
 
@@ -137,6 +153,16 @@ namespace Order.Domain
             _destinationLocation = new OrderDestinationLocation(context.DestinationLocation);
         }
 
+        private void OnOrderTotalCostUpdatedEvent(OrderTotalCostUpdated context)
+        {
+            _totalCost = new OrderTotalCost(context.TotalCost);
+        }
+
+        private void OnOrderTotalDistanceUpdatedEvent(OrderTotalDistanceUpdated context)
+        {
+            _totalDistance = new OrderTotalDistance(context.TotalDistance);
+        }
+
         public void CreateAdditionalCost(
             AdditionalCostId id,
             AdditionalCostName name,
@@ -144,7 +170,7 @@ namespace Order.Domain
             AdditionalCostAmount amount
         )
         {
-            Apply(AdditionalCostCreated.CreateEvent(_id, id, amount, category, name));
+            Apply(AdditionalCostCreated.CreateEvent(Id, id, amount, category, name));
         }
 
         private void OnCreateAdditionalCostEvent(AdditionalCostCreated context)
@@ -163,7 +189,7 @@ namespace Order.Domain
 
         public void RemoveAdditionalCost(AdditionalCostId id)
         {
-            Apply(AdditionalCostRemoved.CreateEvent(_id, id));
+            Apply(AdditionalCostRemoved.CreateEvent(Id, id));
         }
 
         private void OnAdditionalCostRemovedEvent(AdditionalCostRemoved context)
