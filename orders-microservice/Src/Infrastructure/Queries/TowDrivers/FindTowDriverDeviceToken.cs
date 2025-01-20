@@ -11,8 +11,8 @@ namespace Order.Infrastructure
         private readonly IMongoCollection<MongoAccount> _accountsCollection;
         public FindTowDriversDeviceTokenQuery()
         {
-            var client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI_READ_MODELS"));
-            var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME_READ_MODELS"));
+            var client = new MongoClient(Environment.GetEnvironmentVariable("CONNECTION_URI"));
+            var database = client.GetDatabase(Environment.GetEnvironmentVariable("DATABASE_NAME"));
             _accountsCollection = database.GetCollection<MongoAccount>("accounts");
         }
 

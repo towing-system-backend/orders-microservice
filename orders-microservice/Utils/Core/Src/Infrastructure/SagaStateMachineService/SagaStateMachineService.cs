@@ -52,25 +52,33 @@ namespace Application.Core
                     )
                     .TransitionTo(ToAssign)
             );
-            
+
             During(ToAssign,
                 When(OrderToAccept)
-                    .Then(context =>
-                        {
-                            context.Saga.DriverThatAccept = context.Message.TowDriverId;
-                            context.Saga.DeviceToken = context.Message.DeviceToken;
-                            context.Saga.LastStateChange = DateTime.UtcNow;
-                        }
-                    )
-                    .TransitionTo(ToAccept),
+                    .IfElse(context => string.IsNullOrEmpty(context.Message.DeviceToken),
+                        binder => binder
+                            .Then(context =>
+                            {
+                                context.Saga.DriversThatRejected.Add(context.Message.TowDriverId!);
+                            }),
+                        binder => binder
+                            .Then(context =>
+                            {
+                                context.Saga.DriverThatAccept = context.Message.TowDriverId;
+                                context.Saga.DeviceToken = context.Message.DeviceToken;
+                                context.Saga.LastStateChange = DateTime.UtcNow;
+                            })
+                            .TransitionTo(ToAccept)
+                    ),
+
                 When(OrderCancelled)
                     .Then(context =>
                     {
                         context.Saga.LastStateChange = DateTime.UtcNow;
-                    }
-                    )
+                    })
                     .TransitionTo(Cancelled)
             );
+
 
             During(ToAccept,
                 When(OrderAccepted)

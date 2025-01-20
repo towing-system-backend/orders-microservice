@@ -6,6 +6,7 @@
         string Status,
         string IssueLocation,
         string Destination,
+        string Issuer,
         string? TowDriverAssigned,
         string Details,
         string Name,
@@ -13,6 +14,8 @@
         string? Policy,
         string PhoneNumber,
         decimal TotalCost,
+        double TotalDistance,
+        int IdentificationNumber,
         List<AdditonalCostResponse> AdditionalCosts
     );
     public record AdditonalCostResponse

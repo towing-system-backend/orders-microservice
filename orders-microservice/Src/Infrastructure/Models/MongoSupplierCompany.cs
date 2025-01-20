@@ -21,8 +21,8 @@ namespace Order.Infrastructure
         int coverageDistance,
         decimal price,
         string type,
-        DateTime issuanceDate,
-        DateTime expirationDate
+        DateOnly issuanceDate,
+        DateOnly expirationDate
     )
     {
         [BsonId]
@@ -32,8 +32,8 @@ namespace Order.Infrastructure
         public int CoverageDistance = coverageDistance;
         public decimal Price = price;
         public string Type = type;
-        public DateTime IssuanceDate = issuanceDate;
-        public DateTime ExpirationDate = expirationDate;
+        public DateOnly IssuanceDate = issuanceDate;
+        public DateOnly ExpirationDate = expirationDate;
     }
 
     public class MongoSupplierCompany(string supplierCompanyId,
