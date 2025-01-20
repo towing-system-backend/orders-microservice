@@ -5,6 +5,7 @@ namespace Order.Infrastructure
     public class MongoTowDriver
     (
         string towDriverId,
+        string supplierCompanyId,
         string name,
         string email,
         string drivingLicenseOwnerName,
@@ -16,15 +17,16 @@ namespace Order.Infrastructure
         DateOnly medicalCertificateExpirationDate,
         int identificationNumber,
         string? location,
-        string? status
+        string? status,
+        string? towAssigned
     )
     {
         [BsonId]
-
         public string TowDriverId = towDriverId;
+        public string SupplierCompanyId = supplierCompanyId;
         public string Name = name;
-        public string Email = email;
-        public string DrivingLiceseOwnerName = drivingLicenseOwnerName;
+        public string Email = email; 
+        public string DrivingLicenseOwnerName = drivingLicenseOwnerName;
         public DateOnly DrivingLicenseIssueDate = drivingLicenseIssueDate;
         public DateOnly DrivingLicenseExpirationDate = drivingLicenseExpirationDate;
         public string MedicalCertificateOwnerName = medicalCertificateOwnerName;
@@ -34,5 +36,6 @@ namespace Order.Infrastructure
         public int IdentificationNumber = identificationNumber;
         public string? Location = location;
         public string? Status = status;
+        public string? TowAssigned = towAssigned;
     }
 }

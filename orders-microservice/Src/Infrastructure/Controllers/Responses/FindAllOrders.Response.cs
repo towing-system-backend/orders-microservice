@@ -14,6 +14,8 @@
         string? Policy,
         string PhoneNumber,
         decimal TotalCost,
+        double TotalDistance,
+        int IdentificationNumber,
         List<AdditonalCostResponse> AdditionalCosts
     );
 }

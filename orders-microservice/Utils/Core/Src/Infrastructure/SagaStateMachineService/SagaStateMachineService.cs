@@ -58,8 +58,15 @@ namespace Application.Core
                     .Then(context =>
                         {
                             context.Saga.DriverThatAccept = context.Message.TowDriverId;
-                            context.Saga.DeviceToken = context.Message.DeviceToken;
-                            context.Saga.LastStateChange = DateTime.UtcNow;
+                            if (string.IsNullOrEmpty(context.Message.DeviceToken))
+                            {
+                                context.Saga.DriversThatRejected.Add(context.Message.TowDriverId!);
+                            }
+                            else
+                            {
+                                context.Saga.DeviceToken = context.Message.DeviceToken;
+                                context.Saga.LastStateChange = DateTime.UtcNow;
+                            }
                         }
                     )
                     .TransitionTo(ToAccept),

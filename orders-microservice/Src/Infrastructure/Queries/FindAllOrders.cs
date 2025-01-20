@@ -34,6 +34,8 @@ namespace Order.Infrastructure
                     order.PolicyId,
                     order.PhoneNumber,
                     order.TotalCost,
+                    order.TotalDistance,
+                    order.IdentificationNumber,
                     order.AdditionalCosts!.Select(cost => new AdditonalCostResponse
                     (
                         cost.AdditionalCostId,
