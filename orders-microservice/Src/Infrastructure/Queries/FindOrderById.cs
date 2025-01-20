@@ -19,12 +19,13 @@ namespace Order.Infrastructure
             var res = await _orderCollection.Find(filter).FirstOrDefaultAsync();
 
             if (res == null) throw new OrderNotFoundError();
-
+            
             var order = new FindOrderByIdResponse(
                 res.OrderId,
                 res.Status,
                 res.IssueLocation,
                 res.Destination,
+                res.Issuer,
                 res.TowDriverAssigned,
                 res.Details,
                 res.Name,
@@ -32,6 +33,8 @@ namespace Order.Infrastructure
                 res.PolicyId,
                 res.PhoneNumber,
                 res.TotalCost,
+                res.TotalDistance,
+                res.IdentificationNumber,
                 res.AdditionalCosts.Select(cost => new AdditonalCostResponse(
                     cost.AdditionalCostId,
                     cost.Name,

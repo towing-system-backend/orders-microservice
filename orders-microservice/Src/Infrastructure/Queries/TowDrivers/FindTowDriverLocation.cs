@@ -17,7 +17,10 @@ namespace Order.Infrastructure
 
         public async Task<Result<List<FindTowDriverInformationResponse>>> Execute()
         {
-            var filter = Builders<MongoTowDriver>.Filter.Eq(towDriver => towDriver.Status, "Active");
+            var filter = Builders<MongoTowDriver>.Filter.And(
+                Builders<MongoTowDriver>.Filter.Eq(towDriver => towDriver.Status, "Active"),
+                Builders<MongoTowDriver>.Filter.Ne(towDriver => towDriver.Location, "UnKnow")
+            );
             var res = await _towDriverCollection.Find(filter).ToListAsync();
 
             if (res.IsNullOrEmpty())

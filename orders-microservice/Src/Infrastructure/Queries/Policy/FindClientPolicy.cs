@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Order.Application;
@@ -21,27 +22,35 @@ namespace Order.Infrastructure
 
         public async Task<Result<ClientPolicyResponse>> Execute(string OrderId)
         {
-
             var orderFilter = Builders<MongoOrder>.Filter.Eq(order => order.OrderId, OrderId);
             var order = await _orderCollection.Find(orderFilter).FirstOrDefaultAsync();
             if (order == null)
                 return Result<ClientPolicyResponse>.MakeError(new OrderNotFoundError());
+            
+            var policyFilter = Builders<MongoSupplierCompany>.Filter
+                .ElemMatch(company => company.Policies, policy => policy.PolicyId == order.PolicyId);
 
-            var companyFilter = Builders<MongoSupplierCompany>.Filter
-                .ElemMatch(x => x.Policies, policy => policy.PolicyId == order.PolicyId);
 
             var projection = Builders<MongoSupplierCompany>.Projection
-                .Include("Policies.$");
-
+                .Include("Policies.$");  
+            
             var result = await _supplierCompanyCollection
-                .Find(companyFilter)
+                .Find(policyFilter)
                 .Project(projection)
                 .FirstOrDefaultAsync();
+            
+            var policyArray = result?["Policies"]?.AsBsonArray;
+            var policy = policyArray?.FirstOrDefault()?.AsBsonDocument;
 
-            var policy = result["Policies"].AsBsonArray[0].AsBsonDocument;
+            if (policy == null)
+                throw new InvalidOperationException("Policy is not found");
 
             return Result<ClientPolicyResponse>.MakeSuccess(
-                new ClientPolicyResponse(policy["CoverageAmount"].AsInt32, policy["CoverageDistance"].AsInt32));
+                new ClientPolicyResponse(
+                    policy["CoverageAmount"].AsInt32,
+                    policy["CoverageDistance"].AsInt32
+                )
+            );
         }
     }
 }
