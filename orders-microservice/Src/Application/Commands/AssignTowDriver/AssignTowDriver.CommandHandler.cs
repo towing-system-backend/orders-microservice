@@ -1,38 +1,85 @@
 ﻿using Application.Core;
 using System.Text.Json.Nodes;
-using Order.Domain;
 using Microsoft.IdentityModel.Tokens;
+
 using RabbitMQ.Contracts;
 
 namespace Order.Application
 {
-    public class AssignTowDriverCommandHandler
-    (
-        IEventStore eventStore,
-        IOrderRepository orderRepository,
-        IPublishEndPointService publishEndpoint,
-        IMessageBrokerService messageBrokerService,
-        ILocationService<JsonNode> locationService,
-        ISagaStateMachineService<string> sagaRepository
-    ) : IService<AssignTowDriverCommand, AssignTowDriverResponse>
+    using Order.Domain;
+    public class AssignTowDriverCommandHandler : IService<AssignTowDriverCommand, AssignTowDriverResponse>
     {
-        private readonly IEventStore _eventStore = eventStore;
-        private readonly IOrderRepository _orderRepository = orderRepository;
-        private readonly IPublishEndPointService _publishEndpoint = publishEndpoint;
-        private readonly IMessageBrokerService _messageBrokerService = messageBrokerService;
-        private readonly ILocationService<JsonNode> _locationService = locationService;
-        private readonly ISagaStateMachineService<string> _sagaRepository = sagaRepository;
+        private readonly IEventStore _eventStore;
+        private readonly IOrderRepository _orderRepository;
+        private readonly IPublishEndPointService _publishEndpoint;
+        private readonly IMessageBrokerService _messageBrokerService;
+        private readonly ILocationService<JsonNode> _locationService;
+        private readonly ISagaStateMachineService<string> _sagaRepository;
+
+        public AssignTowDriverCommandHandler(
+            IEventStore eventStore,
+            IOrderRepository orderRepository,
+            IPublishEndPointService publishEndpoint,
+            IMessageBrokerService messageBrokerService,
+            ILocationService<JsonNode> locationService,
+            ISagaStateMachineService<string> sagaRepository
+        )
+        {
+            _eventStore = eventStore;
+            _orderRepository = orderRepository;
+            _publishEndpoint = publishEndpoint;
+            _messageBrokerService = messageBrokerService;
+            _locationService = locationService;
+            _sagaRepository = sagaRepository;
+        }
+
         public async Task<Result<AssignTowDriverResponse>> Execute(AssignTowDriverCommand command)
         {
-            var orderRegistered = await _orderRepository.FindById(command.OrderId);
-            if (!orderRegistered.HasValue())
-                return Result<AssignTowDriverResponse>.MakeError(new OrderNotFoundError());
+            var order = await GetOrderById(command.OrderId);
+            if (order == null) return Result<AssignTowDriverResponse>.MakeError(new OrderNotFoundError());
 
-            var order = orderRegistered.Unwrap();
+            if (!CanAssignDriver(order))
+                return Result<AssignTowDriverResponse>.MakeError(new OrderNotAssignableError());
 
+            var rejectedDrivers = await GetRejectedDrivers(command.OrderId);
+            var availableDrivers = await GetAvailableDrivers(command, order, rejectedDrivers);
+            if (!availableDrivers.Any())
+                return Result<AssignTowDriverResponse>.MakeError(new NoAvailableDriversError());
+
+            var driver = availableDrivers.First();
+            var token = command.DriversDeviceInfo.GetValueOrDefault(driver.TowDriverId);
+            if (string.IsNullOrEmpty(token))
+                return Result<AssignTowDriverResponse>.MakeError(new MissingDriverTokenError());
+
+            await UpdateOrderWithDriverInfo(order, driver, token);
+            await PublishOrderEvents(order, driver, token);
+
+            return Result<AssignTowDriverResponse>.MakeSuccess(driver);
+        }
+
+        private async Task<Order> GetOrderById(string orderId)
+        {
+            var order = await _orderRepository.FindById(orderId);
+            return order.HasValue() ? order.Unwrap() : null;
+        }
+
+        private bool CanAssignDriver(Order order)
+        {
+            return order.GetOrderStatus().GetValue() == "ToAssign";
+        }
+
+        private async Task<List<string>> GetRejectedDrivers(string orderId)
+        {
+            var rejectedDrivers = await _sagaRepository.FindRejectedDrivers(orderId);
+            return rejectedDrivers.IsNullOrEmpty() ? new List<string>() : rejectedDrivers;
+        }
+
+        private async Task<List<AssignTowDriverResponse>> GetAvailableDrivers(AssignTowDriverCommand command,
+            Order order, List<string> rejectedDrivers)
+        {
             var orderLocation = order.GetOrderIssueLocation().GetValue();
-            var drivers = (await _locationService.FindNearestTow(command.TowsLocation, orderLocation))["TowLocations"]
-                ?.AsArray()
+            var nearestTows = await _locationService.FindNearestTow(command.TowsLocation, orderLocation);
+            var drivers = nearestTows["TowLocations"]?.AsArray()
                 .Select(l => new AssignTowDriverResponse(
                     l?["TowDriverId"]?.ToString() ?? string.Empty,
                     l["Latitude"].GetValue<double>(),
@@ -43,42 +90,40 @@ namespace Order.Application
                 ))
                 .ToList();
 
-           
-            if (drivers.IsNullOrEmpty()) return Result<AssignTowDriverResponse>.MakeError(new NoAvailableDriversError());
-            var rejectedDrivers = await _sagaRepository.FindRejectedDrivers(command.OrderId);
-            var availableDrivers = drivers
-                .Where(d => !rejectedDrivers.Contains(d.TowDriverId))
-                .ToList();
-            var driver = availableDrivers.FirstOrDefault();
-      
-            var token = command.DriversDeviceInfo.GetValueOrDefault(driver.TowDriverId);
-            if (string.IsNullOrEmpty(token)) return Result<AssignTowDriverResponse>.MakeError(new MissingDriverTokenError());
+            if (drivers == null) return new List<AssignTowDriverResponse>();
+
+            return drivers.Where(d => !rejectedDrivers.Contains(d.TowDriverId)).ToList();
+        }
+
+        private async Task UpdateOrderWithDriverInfo(Order order, AssignTowDriverResponse driver, string token)
+        {
             order.UpdateOrderStatus(new OrderStatus("ToAccept"));
             order.UpdateOrderTowDriverAssigned(new OrderTowDriverAssigned(driver.TowDriverId));
+
             var routeInfo = await _locationService.FindShortestRoute(
                 order.GetOrderIssueLocation().GetValue(),
                 order.GetOrderDestinationLocation().GetValue()
             );
+
             var distanceToDestination = routeInfo?["Distance"].GetValue<double>();
             var totalDistance = driver.Distance + distanceToDestination;
             order.UpdateOrderTotalDistance(new OrderTotalDistance(totalDistance ?? 0));
+        }
 
+        private async Task PublishOrderEvents(Order order, AssignTowDriverResponse driver, string token)
+        {
             var events = order.PullEvents();
             await Task.WhenAll(
-                _publishEndpoint.Publish(
-                    new EventOrderToAccept(
-                        Guid.Parse(order.GetOrderId().GetValue()),
-                        driver.TowDriverId,
-                        token,
-                        DateTime.Now
-                    )
-                ),
+                _publishEndpoint.Publish(new EventOrderToAccept(
+                    Guid.Parse(order.GetOrderId().GetValue()),
+                    driver.TowDriverId,
+                    token,
+                    DateTime.Now
+                )),
                 _orderRepository.Save(order),
                 _eventStore.AppendEvents(events),
                 _messageBrokerService.Publish(events)
             );
-
-            return Result<AssignTowDriverResponse>.MakeSuccess(driver);
         }
     }
 }
