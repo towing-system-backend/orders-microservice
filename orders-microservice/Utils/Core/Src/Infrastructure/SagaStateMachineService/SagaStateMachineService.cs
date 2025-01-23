@@ -55,23 +55,6 @@ namespace Application.Core
 
             During(ToAssign,
                 When(OrderToAccept)
-<<<<<<< HEAD
-                    .Then(context =>
-                        {
-                            context.Saga.DriverThatAccept = context.Message.TowDriverId;
-                            if (string.IsNullOrEmpty(context.Message.DeviceToken))
-                            {
-                                context.Saga.DriversThatRejected.Add(context.Message.TowDriverId!);
-                            }
-                            else
-                            {
-                                context.Saga.DeviceToken = context.Message.DeviceToken;
-                                context.Saga.LastStateChange = DateTime.UtcNow;
-                            }
-                        }
-                    )
-                    .TransitionTo(ToAccept),
-=======
                     .IfElse(context => string.IsNullOrEmpty(context.Message.DeviceToken),
                         binder => binder
                             .Then(context =>
@@ -87,8 +70,6 @@ namespace Application.Core
                             })
                             .TransitionTo(ToAccept)
                     ),
-
->>>>>>> f77c59b17e7f1954a8fcbdd17500f634594610b9
                 When(OrderCancelled)
                     .Then(context =>
                     {

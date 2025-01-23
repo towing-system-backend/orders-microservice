@@ -48,17 +48,12 @@ namespace Order.Application
 
             var driver = availableDrivers.First();
             var token = command.DriversDeviceInfo.GetValueOrDefault(driver.TowDriverId);
-<<<<<<< HEAD
-            if (string.IsNullOrEmpty(token))
-                return Result<AssignTowDriverResponse>.MakeError(new MissingDriverTokenError());
-=======
+
             if (string.IsNullOrEmpty(token)) 
             {
                 await PublishOrderEvents(order, driver, null);
                 return Result<AssignTowDriverResponse>.MakeError(new MissingDriverTokenError());
             }
-                
->>>>>>> f77c59b17e7f1954a8fcbdd17500f634594610b9
 
             await UpdateOrderWithDriverInfo(order, driver, token);
             await PublishOrderEvents(order, driver, token);
