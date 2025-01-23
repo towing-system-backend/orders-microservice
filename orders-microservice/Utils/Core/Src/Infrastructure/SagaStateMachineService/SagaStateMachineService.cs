@@ -70,7 +70,6 @@ namespace Application.Core
                             })
                             .TransitionTo(ToAccept)
                     ),
-
                 When(OrderCancelled)
                     .Then(context =>
                     {
